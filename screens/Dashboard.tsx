@@ -1,20 +1,65 @@
 import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
-import { View, Text, SafeAreaView, StyleSheet, Dimensions } from "react-native";
+import { View, Text, StyleSheet, Platform, Image } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import { MaterialIcons } from "@expo/vector-icons";
 
-import { globalStyles } from "../styles/globalStyles";
-
-const windowHeight = Dimensions.get("window").height;
+import { colors, globalStyles } from "../styles/globalStyles";
 
 export const Dashboard = ({ navigation }: { navigation: any }) => {
+  const [test, setTest] = React.useState(false);
   return (
-    <SafeAreaView style={globalStyles.androidSafeArea}>
+    <View style={globalStyles.noSafeArea}>
+      <View style={styles.safeShapeContainer}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Settings")}
+            style={{
+              backgroundColor: colors.black,
+              padding: 10,
+              borderRadius: 500,
+            }}
+          >
+            <MaterialIcons name="settings" size={24} color={colors.white} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("MyAccount")}
+            style={{
+              backgroundColor: colors.black,
+              padding: 10,
+              borderRadius: 500,
+            }}
+          >
+            <MaterialIcons name="person" size={24} color={colors.white} />
+          </TouchableOpacity>
+        </View>
+        <TouchableOpacity
+          onPress={() => navigation.navigate("TheirAccount")}
+          style={styles.shadow}
+        >
+          <View style={styles.centerAvatar}>
+            <Image
+              source={
+                test
+                  ? require("../assets/unicorn.png")
+                  : require("../assets/donut-sloth.png")
+              }
+              style={{
+                width: "99.8%",
+                height: "99.8%",
+                opacity: 0.7,
+                borderRadius: 500,
+              }}
+            />
+          </View>
+        </TouchableOpacity>
+      </View>
       <View
         style={{
           ...globalStyles.container,
           justifyContent: "space-around",
-          paddingVertical: 150,
+          paddingVertical: 25,
+          flex: 0.4,
         }}
       >
         <LinearGradient
@@ -29,6 +74,12 @@ export const Dashboard = ({ navigation }: { navigation: any }) => {
             onPress={() => navigation.navigate("Chat")}
           >
             <Text style={globalStyles.titleText}>chat</Text>
+            <MaterialIcons
+              name="chat-bubble"
+              size={50}
+              color={colors.white}
+              style={styles.rightIcon}
+            />
           </TouchableOpacity>
         </LinearGradient>
         <LinearGradient
@@ -40,9 +91,18 @@ export const Dashboard = ({ navigation }: { navigation: any }) => {
         >
           <TouchableOpacity
             style={globalStyles.mainBtns}
-            onPress={() => navigation.navigate("Chat")}
+            onPress={() => navigation.navigate("Groceries")}
+            onLongPress={() => {
+              console.log("TODO: Add grocery item");
+            }}
           >
             <Text style={globalStyles.titleText}>groceries</Text>
+            <MaterialIcons
+              name="local-grocery-store"
+              size={50}
+              color={colors.white}
+              style={styles.rightIcon}
+            />
           </TouchableOpacity>
         </LinearGradient>
         <LinearGradient
@@ -54,22 +114,77 @@ export const Dashboard = ({ navigation }: { navigation: any }) => {
         >
           <TouchableOpacity
             style={globalStyles.mainBtns}
-            onPress={() => navigation.navigate("Settings")}
+            onPress={() => navigation.navigate("ToDo")}
+            onLongPress={() => {
+              console.log("TODO: add new todo");
+            }}
           >
             <Text style={globalStyles.titleText}>to do</Text>
+            <MaterialIcons
+              name="view-list"
+              size={50}
+              color={colors.white}
+              style={styles.rightIcon}
+            />
           </TouchableOpacity>
         </LinearGradient>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  safeShapeContainer: {
+    flex: 0.6,
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingTop: Platform.OS === "android" ? 25 : 0,
+    backgroundColor: "#47d0f6",
+    borderBottomRightRadius: 5000,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.34,
+    shadowRadius: 6.27,
+
+    elevation: 10,
+  },
+
   header: {
-    position: "absolute",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: 25,
     width: "100%",
-    height: "100%",
-    bottom: 500,
-    zIndex: -1,
+  },
+  centerAvatar: {
+    justifyContent: "center",
+    alignItems: "center",
+    width: 275,
+    height: 275,
+    backgroundColor: colors.black,
+    borderColor: "#53CCED",
+    borderWidth: 2,
+    borderRadius: 500,
+    marginBottom: 30,
+  },
+  shadow: {
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.34,
+    shadowRadius: 6.27,
+
+    elevation: 10,
+  },
+  rightIcon: {
+    position: "absolute",
+    right: 15,
+    textShadowColor: "#00000020",
+    textShadowOffset: { width: -1, height: 6 },
+    textShadowRadius: 10,
   },
 });

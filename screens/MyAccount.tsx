@@ -7,7 +7,7 @@ import {
 import { globalStyles, colors } from "../styles/globalStyles";
 import { MaterialIcons } from "@expo/vector-icons";
 
-export const Settings = ({ navigation }: { navigation: any }) => {
+export const MyAccount = ({ navigation }: { navigation: any }) => {
   return (
     <SafeAreaView style={globalStyles.androidSafeArea}>
       <View style={styles.header}>
@@ -15,7 +15,7 @@ export const Settings = ({ navigation }: { navigation: any }) => {
           <MaterialIcons name="arrow-back" size={30} color={colors.white} />
         </TouchableOpacity>
         <TouchableHighlight>
-          <Text style={globalStyles.titleText}>Settings</Text>
+          <Text style={globalStyles.titleText}>My Account</Text>
         </TouchableHighlight>
         <View />
       </View>

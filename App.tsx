@@ -12,6 +12,10 @@ import { Dashboard } from "./screens/Dashboard";
 import { Chat } from "./screens/Chat";
 import { colors } from "./styles/globalStyles";
 import { Settings } from "./screens/Settings";
+import { ToDo } from "./screens/ToDo";
+import { Groceries } from "./screens/Groceries";
+import { MyAccount } from "./screens/MyAccount";
+import { TheirAccount } from "./screens/TheirAccount";
 
 const Stack = createStackNavigator();
 
@@ -37,7 +41,6 @@ export default function App() {
           headerMode="none"
           screenOptions={{
             gestureEnabled: true,
-            gestureDirection: "horizontal",
           }}
         >
           <Stack.Screen
@@ -52,6 +55,23 @@ export default function App() {
             component={Chat}
             options={{
               cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+              gestureDirection: "horizontal",
+            }}
+          />
+          <Stack.Screen
+            name="Groceries"
+            component={Groceries}
+            options={{
+              cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+              gestureDirection: "horizontal",
+            }}
+          />
+          <Stack.Screen
+            name="ToDo"
+            component={ToDo}
+            options={{
+              cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+              gestureDirection: "horizontal",
             }}
           />
           <Stack.Screen
@@ -60,6 +80,25 @@ export default function App() {
             options={{
               cardStyleInterpolator:
                 CardStyleInterpolators.forModalPresentationIOS,
+              gestureDirection: "vertical",
+            }}
+          />
+          <Stack.Screen
+            name="MyAccount"
+            component={MyAccount}
+            options={{
+              cardStyleInterpolator:
+                CardStyleInterpolators.forModalPresentationIOS,
+              gestureDirection: "vertical",
+            }}
+          />
+          <Stack.Screen
+            name="TheirAccount"
+            component={TheirAccount}
+            options={{
+              cardStyleInterpolator:
+                CardStyleInterpolators.forModalPresentationIOS,
+              gestureDirection: "vertical",
             }}
           />
         </Stack.Navigator>
