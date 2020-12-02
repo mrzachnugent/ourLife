@@ -20,18 +20,31 @@ export const globalStyles = StyleSheet.create({
   androidSafeArea: {
     flex: 1,
     backgroundColor: colors.black,
-    paddingTop: Platform.OS === "android" ? 25 : 0,
+    paddingTop: Platform.OS === "android" ? 35 : 0,
+  },
+
+  noSafeArea: {
+    flex: 1,
+    backgroundColor: colors.black,
   },
   container: {
-    flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
   titleText: {
     fontFamily: "montserrat-bold",
-    fontSize: 30,
+    fontSize: 25,
     width: "100%",
     textAlign: "center",
+    color: "#FFF",
+    textShadowColor: "#00000060",
+    textShadowOffset: { width: -1, height: 6 },
+    textShadowRadius: 15,
+    letterSpacing: 1,
+  },
+  pageTitleText: {
+    fontFamily: "montserrat-bold",
+    fontSize: 20,
     color: colors.white,
     textShadowColor: "#00000060",
     textShadowOffset: { width: -1, height: 6 },
@@ -41,11 +54,22 @@ export const globalStyles = StyleSheet.create({
   mainBtns: {
     alignItems: "center",
     width: "100%",
-    paddingVertical: 22,
+    paddingVertical: 10,
+    shadowColor: "#000",
   },
   btnContainer: {
     borderRadius: 7,
     width: "90%",
     position: "relative",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.34,
+    shadowRadius: 6.27,
+    elevation: 10,
+    borderWidth: 1,
+    borderColor: "#E3EDF730",
   },
 });

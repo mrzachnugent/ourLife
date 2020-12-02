@@ -1,11 +1,10 @@
 import React from "react";
-import { View, Text, SafeAreaView, Image, StyleSheet } from "react-native";
+import { View, Text, SafeAreaView, StyleSheet, Image } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
-
 import { globalStyles, colors } from "../styles/globalStyles";
 import { MaterialIcons } from "@expo/vector-icons";
 
-export const Chat = ({ navigation }: { navigation: any }) => {
+export const Groceries = ({ navigation }: { navigation: any }) => {
   return (
     <SafeAreaView style={globalStyles.androidSafeArea}>
       <View style={styles.container}>
@@ -13,15 +12,13 @@ export const Chat = ({ navigation }: { navigation: any }) => {
           <MaterialIcons name="arrow-back" size={30} color={colors.white} />
         </TouchableOpacity>
         <View style={styles.heading}>
-          <Text style={globalStyles.pageTitleText}>CHAT</Text>
+          <Text style={globalStyles.pageTitleText}>GROCERIES</Text>
           <Image
-            source={require("../assets/unicorn.png")}
-            style={{ width: 30, height: 60 }}
+            source={require("../assets/dancing-panda.png")}
+            style={{ width: 50, height: 50 }}
           />
         </View>
-        <TouchableOpacity>
-          <MaterialIcons name="phone" size={30} color={colors.white} />
-        </TouchableOpacity>
+        <View />
       </View>
     </SafeAreaView>
   );
@@ -46,6 +43,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    width: 120,
+    width: 210,
   },
 });
