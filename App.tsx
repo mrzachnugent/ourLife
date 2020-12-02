@@ -16,6 +16,8 @@ import { ToDo } from "./screens/ToDo";
 import { Groceries } from "./screens/Groceries";
 import { MyAccount } from "./screens/MyAccount";
 import { TheirAccount } from "./screens/TheirAccount";
+import { Login } from "./screens/Login";
+import { UploadAvatar } from "./screens/UploadAvatar";
 
 const Stack = createStackNavigator();
 
@@ -28,6 +30,7 @@ const getFonts = () =>
     "montserrat-bold": require("./assets/fonts/Montserrat-Bold.ttf"),
     "montserrat-extra-bold": require("./assets/fonts/Montserrat-ExtraBold.ttf"),
     "montserrat-black": require("./assets/fonts/Montserrat-Black.ttf"),
+    "montserrat-alternates": require("./assets/fonts/MontserratAlternates-ExtraBold.ttf"),
   });
 
 export default function App() {
@@ -37,12 +40,27 @@ export default function App() {
     return (
       <NavigationContainer>
         <Stack.Navigator
-          initialRouteName="Dashboard"
+          initialRouteName="Login"
+          // initialRouteName="Dashboard"
           headerMode="none"
           screenOptions={{
             gestureEnabled: true,
           }}
         >
+          <Stack.Screen
+            name="Login"
+            component={Login}
+            options={{
+              cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+            }}
+          />
+          <Stack.Screen
+            name="UploadAvatar"
+            component={UploadAvatar}
+            options={{
+              cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+            }}
+          />
           <Stack.Screen
             name="Dashboard"
             component={Dashboard}
