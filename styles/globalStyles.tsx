@@ -24,15 +24,28 @@ export const globalStyles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    padding: 25,
+    justifyContent: "center",
+    alignItems: "center",
   },
   titleText: {
     fontFamily: "montserrat-bold",
-    fontSize: 18,
+    fontSize: 30,
+    width: "100%",
+    textAlign: "center",
     color: colors.white,
+    textShadowColor: "#00000060",
+    textShadowOffset: { width: -1, height: 6 },
+    textShadowRadius: 15,
+    letterSpacing: 1,
   },
-  paragraph: {
-    marginVertical: 8,
-    lineHeight: 20,
+  mainBtns: {
+    alignItems: "center",
+    width: "100%",
+    paddingVertical: 22,
+  },
+  btnContainer: {
+    borderRadius: 7,
+    width: "90%",
+    position: "relative",
   },
 });

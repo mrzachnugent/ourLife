@@ -1,6 +1,9 @@
 import React, { useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
-import { createStackNavigator } from "@react-navigation/stack";
+import {
+  CardStyleInterpolators,
+  createStackNavigator,
+} from "@react-navigation/stack";
 import * as Font from "expo-font";
 import { AppLoading } from "expo";
 import { StatusBar } from "expo-status-bar";
@@ -8,6 +11,7 @@ import { StatusBar } from "expo-status-bar";
 import { Dashboard } from "./screens/Dashboard";
 import { Chat } from "./screens/Chat";
 import { colors } from "./styles/globalStyles";
+import { Settings } from "./screens/Settings";
 
 const Stack = createStackNavigator();
 
@@ -32,13 +36,32 @@ export default function App() {
           initialRouteName="Dashboard"
           headerMode="none"
           screenOptions={{
-            cardStyle: {
-              backgroundColor: "black",
-            },
+            gestureEnabled: true,
+            gestureDirection: "horizontal",
           }}
         >
-          <Stack.Screen name="Dashboard" component={Dashboard} />
-          <Stack.Screen name="Chat" component={Chat} />
+          <Stack.Screen
+            name="Dashboard"
+            component={Dashboard}
+            options={{
+              cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+            }}
+          />
+          <Stack.Screen
+            name="Chat"
+            component={Chat}
+            options={{
+              cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+            }}
+          />
+          <Stack.Screen
+            name="Settings"
+            component={Settings}
+            options={{
+              cardStyleInterpolator:
+                CardStyleInterpolators.forModalPresentationIOS,
+            }}
+          />
         </Stack.Navigator>
         <StatusBar style="light" />
       </NavigationContainer>

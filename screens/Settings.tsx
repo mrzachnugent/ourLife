@@ -3,12 +3,12 @@ import { View, Text, SafeAreaView } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { globalStyles } from "../styles/globalStyles";
 
-export const Chat = () => {
+export const Settings = () => {
   return (
     <SafeAreaView style={globalStyles.androidSafeArea}>
       <View style={globalStyles.container}>
         <TouchableOpacity>
-          <Text style={globalStyles.titleText}>Chat</Text>
+          <Text style={globalStyles.titleText}>Settings</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
