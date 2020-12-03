@@ -18,6 +18,7 @@ import { MyAccount } from "./screens/MyAccount";
 import { TheirAccount } from "./screens/TheirAccount";
 import { Login } from "./screens/Login";
 import { UploadAvatar } from "./screens/UploadAvatar";
+import { ShareYourLink } from "./screens/ShareYourLink";
 
 const Stack = createStackNavigator();
 
@@ -57,6 +58,13 @@ export default function App() {
           <Stack.Screen
             name="UploadAvatar"
             component={UploadAvatar}
+            options={{
+              cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+            }}
+          />
+          <Stack.Screen
+            name="ShareYourLink"
+            component={ShareYourLink}
             options={{
               cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
             }}

@@ -7,30 +7,21 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { colors, globalStyles } from "../styles/globalStyles";
 
 export const Dashboard = ({ navigation }: { navigation: any }) => {
-  const [test, setTest] = React.useState(false);
   return (
     <View style={globalStyles.noSafeArea}>
       <View style={styles.safeShapeContainer}>
         <View style={styles.header}>
           <TouchableOpacity
             onPress={() => navigation.navigate("Settings")}
-            style={{
-              backgroundColor: colors.black,
-              padding: 10,
-              borderRadius: 500,
-            }}
+            style={styles.smallbtn}
           >
             <MaterialIcons name="settings" size={24} color={colors.white} />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => navigation.navigate("MyAccount")}
-            style={{
-              backgroundColor: colors.black,
-              padding: 10,
-              borderRadius: 500,
-            }}
+            style={styles.smallbtn}
           >
-            <MaterialIcons name="person" size={24} color={colors.white} />
+            <MaterialIcons name="person" size={25} color={colors.white} />
           </TouchableOpacity>
         </View>
         <TouchableOpacity
@@ -39,18 +30,15 @@ export const Dashboard = ({ navigation }: { navigation: any }) => {
         >
           <View style={styles.centerAvatar}>
             <Image
-              source={
-                test
-                  ? require("../assets/unicorn.png")
-                  : require("../assets/donut-sloth.png")
-              }
+              source={require("../assets/mel-avatar.jpg")}
               style={{
                 width: "99.8%",
                 height: "99.8%",
-                opacity: 0.7,
+                opacity: 1,
                 borderRadius: 500,
               }}
             />
+            {/* <MaterialIcons name="person" size={200} color={colors.white} /> */}
           </View>
         </TouchableOpacity>
       </View>
@@ -139,7 +127,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingTop: Platform.OS === "android" ? 25 : 0,
-    backgroundColor: "#47d0f6",
+    backgroundColor: "#299fc0",
     borderBottomRightRadius: 5000,
     shadowColor: "#000",
     shadowOffset: {
@@ -186,5 +174,20 @@ const styles = StyleSheet.create({
     textShadowColor: "#00000020",
     textShadowOffset: { width: -1, height: 6 },
     textShadowRadius: 10,
+  },
+
+  smallbtn: {
+    backgroundColor: colors.black,
+    padding: 10,
+    borderRadius: 500,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.34,
+    shadowRadius: 6.27,
+
+    elevation: 10,
   },
 });

@@ -9,7 +9,7 @@ export const Login = ({ navigation }: { navigation: any }) => {
       <View style={styles.background}>
         <View>
           <Text style={styles.smallText}>Welcome to</Text>
-          <Text style={styles.heading}>Our life</Text>
+          <Text style={styles.heading}>OurLife</Text>
         </View>
         <View>
           <TouchableHighlight

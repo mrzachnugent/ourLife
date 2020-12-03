@@ -1,12 +1,32 @@
-import React, { FC } from "react";
+import React from "react";
 import { Text, View, Image, StyleSheet } from "react-native";
 import { colors } from "../styles/globalStyles";
 import { LinearGradient } from "expo-linear-gradient";
 import { globalStyles } from "../styles/globalStyles";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import * as ImagePicker from "expo-image-picker";
 import { MaterialIcons } from "@expo/vector-icons";
 
-export const UploadAvatar = () => {
+export const UploadAvatar = ({ navigation }: { navigation: any }) => {
+  const [image, setImage] = React.useState<string | null>(null);
+
+  const handlePress = async () => {
+    const { status } = await ImagePicker.requestCameraRollPermissionsAsync();
+    if (status !== "granted") {
+      alert("Sorry, we need camera roll permissions to make this work!");
+      return;
+    }
+    const chosenPic = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      quality: 1,
+      aspect: [4, 4],
+    });
+    if (!chosenPic.cancelled) {
+      setImage(chosenPic.uri);
+    }
+  };
+
   return (
     <View style={styles.black}>
       <View style={styles.background}>
@@ -18,27 +38,28 @@ export const UploadAvatar = () => {
           <Text style={styles.heading}>Upload an avatar</Text>
         </View>
 
-        <LinearGradient
-          start={{ x: 0.0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          locations={[0, 0.9]}
-          colors={["#282C31", "#22262B"]}
-          style={styles.button}
-        >
-          <TouchableOpacity
-            style={globalStyles.mainBtns}
-            onPress={() => console.log("image-picker")}
+        {!image ? (
+          <LinearGradient
+            start={{ x: 0.0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            locations={[0, 0.9]}
+            colors={["#282C31", "#22262B"]}
+            style={styles.button}
           >
-            <MaterialIcons name="image" size={75} color={colors.white} />
-            <Text style={globalStyles.titleText}>UPLOAD</Text>
-          </TouchableOpacity>
-        </LinearGradient>
+            <TouchableOpacity
+              style={globalStyles.mainBtns}
+              onPress={handlePress}
+            >
+              <MaterialIcons name="image" size={75} color={colors.white} />
+              <Text style={globalStyles.titleText}>UPLOAD</Text>
+            </TouchableOpacity>
+          </LinearGradient>
+        ) : (
+          <Image source={{ uri: image }} style={styles.avatar} />
+        )}
       </View>
       <View style={styles.bottom}>
-        <TouchableOpacity>
-          <Text style={styles.littleButton}>log out</Text>
-        </TouchableOpacity>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate("ShareYourLink")}>
           <Text style={styles.littleButton}>skip</Text>
         </TouchableOpacity>
       </View>
@@ -89,7 +110,7 @@ const styles = StyleSheet.create({
   bottom: {
     flex: 0.1,
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "flex-end",
     paddingHorizontal: 12,
     alignItems: "center",
   },
@@ -97,5 +118,10 @@ const styles = StyleSheet.create({
     color: colors.white,
     fontFamily: "montserrat-regular",
     opacity: 0.8,
+  },
+  avatar: {
+    width: 200,
+    height: 200,
+    borderRadius: 5000,
   },
 });

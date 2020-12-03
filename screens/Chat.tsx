@@ -4,6 +4,7 @@ import { TouchableOpacity } from "react-native-gesture-handler";
 
 import { globalStyles, colors } from "../styles/globalStyles";
 import { MaterialIcons } from "@expo/vector-icons";
+import { GiftedChat } from "react-native-gifted-chat";
 
 export const Chat = ({ navigation }: { navigation: any }) => {
   return (
@@ -23,9 +24,13 @@ export const Chat = ({ navigation }: { navigation: any }) => {
           <MaterialIcons name="phone" size={30} color={colors.white} />
         </TouchableOpacity>
       </View>
+      <GiftedChat />
     </SafeAreaView>
   );
 };
+
+//For custom GiftedChat styling:
+//https://www.gitmemory.com/issue/FaridSafi/react-native-gifted-chat/1739/629664911
 
 const styles = StyleSheet.create({
   //header
@@ -47,5 +52,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     width: 120,
+  },
+  inputBackground: {
+    backgroundColor: colors.black,
   },
 });

@@ -15,7 +15,7 @@ export const TheirAccount = ({ navigation }: { navigation: any }) => {
           <MaterialIcons name="arrow-back" size={30} color={colors.white} />
         </TouchableOpacity>
         <TouchableHighlight>
-          <Text style={globalStyles.titleText}>Their name</Text>
+          <Text style={globalStyles.titleText}>Mel ❤️</Text>
         </TouchableHighlight>
         <View />
       </View>
