@@ -1,16 +1,21 @@
+// @refresh r e s e t (remove spaces to work)
+// comment above : prevents preservation of React local state in function components and hooks
 import React, { useState } from "react";
+import { LogBox } from "react-native";
+import * as firebase from "firebase";
+import "firebase/firestore";
+import { StatusBar } from "expo-status-bar";
+import { AppLoading } from "expo";
 import { NavigationContainer } from "@react-navigation/native";
 import {
   CardStyleInterpolators,
   createStackNavigator,
 } from "@react-navigation/stack";
-import * as Font from "expo-font";
-import { AppLoading } from "expo";
-import { StatusBar } from "expo-status-bar";
 
+import apiKeys from "./config/keys";
+import { getFonts } from "./Components/getFonts";
 import { Dashboard } from "./screens/Dashboard";
 import { Chat } from "./screens/Chat";
-import { colors } from "./styles/globalStyles";
 import { Settings } from "./screens/Settings";
 import { ToDo } from "./screens/ToDo";
 import { Groceries } from "./screens/Groceries";
@@ -19,20 +24,24 @@ import { TheirAccount } from "./screens/TheirAccount";
 import { Login } from "./screens/Login";
 import { UploadAvatar } from "./screens/UploadAvatar";
 import { ShareYourLink } from "./screens/ShareYourLink";
+import { FirstLoadingScreen } from "./screens/FirstLoadingScreen";
 
+if (!firebase.apps.length) {
+  firebase.initializeApp(apiKeys.firebaseConfig);
+}
+
+//access firestore
+const db = firebase.firestore();
+const chatRef = db.collection("chats");
+
+//create react-navigation
 const Stack = createStackNavigator();
 
+//Removes yellowbox warning for android
+LogBox.ignoreLogs(["Setting a timer for a long period of time"]);
+
 //Making custom fonts accessible throughout app
-const getFonts = () =>
-  Font.loadAsync({
-    "montserrat-regular": require("./assets/fonts/Montserrat-Regular.ttf"),
-    "montserrat-medium": require("./assets/fonts/Montserrat-Medium.ttf"),
-    "montserrat-semi-bold": require("./assets/fonts/Montserrat-SemiBold.ttf"),
-    "montserrat-bold": require("./assets/fonts/Montserrat-Bold.ttf"),
-    "montserrat-extra-bold": require("./assets/fonts/Montserrat-ExtraBold.ttf"),
-    "montserrat-black": require("./assets/fonts/Montserrat-Black.ttf"),
-    "montserrat-alternates": require("./assets/fonts/MontserratAlternates-ExtraBold.ttf"),
-  });
+getFonts();
 
 export default function App() {
   const [fontsLoaded, setFontsLoaded] = useState(false);
@@ -41,13 +50,20 @@ export default function App() {
     return (
       <NavigationContainer>
         <Stack.Navigator
-          initialRouteName="Login"
+          initialRouteName="FirstLoadingScreen"
           // initialRouteName="Dashboard"
           headerMode="none"
           screenOptions={{
             gestureEnabled: true,
           }}
         >
+          <Stack.Screen
+            name="FirstLoadingScreen"
+            component={FirstLoadingScreen}
+            options={{
+              cardStyleInterpolator: CardStyleInterpolators.forHorizontalIOS,
+            }}
+          />
           <Stack.Screen
             name="Login"
             component={Login}

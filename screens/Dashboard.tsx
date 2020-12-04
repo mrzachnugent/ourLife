@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingTop: Platform.OS === "android" ? 25 : 0,
-    backgroundColor: "#299fc0",
+    backgroundColor: "#00d9ff",
     borderBottomRightRadius: 5000,
     shadowColor: "#000",
     shadowOffset: {

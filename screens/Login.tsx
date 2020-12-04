@@ -14,10 +14,11 @@ export const Login = ({ navigation }: { navigation: any }) => {
         <View>
           <TouchableHighlight
             onPress={() => navigation.navigate("UploadAvatar")}
+            style={{ alignItems: "center" }}
           >
             <Image
               source={require("../assets/yoga-sloth.png")}
-              style={{ height: 215, width: 200, marginBottom: 30 }}
+              style={{ height: 108, width: 100, marginBottom: 30 }}
             />
           </TouchableHighlight>
           <Text style={styles.smallText}>Sign up/ Log in with:</Text>
