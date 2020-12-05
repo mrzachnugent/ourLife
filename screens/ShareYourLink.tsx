@@ -4,6 +4,7 @@ import { colors } from "../styles/globalStyles";
 import { LinearGradient } from "expo-linear-gradient";
 import { globalStyles } from "../styles/globalStyles";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import firebase from "firebase";
 
 import { MaterialIcons } from "@expo/vector-icons";
 
@@ -53,7 +54,14 @@ export const ShareYourLink = ({ navigation }: { navigation: any }) => {
         </Text>
       </View>
       <View style={styles.bottom}>
-        <TouchableOpacity>
+        <TouchableOpacity
+          onPress={() =>
+            firebase
+              .auth()
+              .signOut()
+              .then(() => console.log("signed out"))
+          }
+        >
           <Text style={styles.littleButton}>Log out</Text>
         </TouchableOpacity>
       </View>

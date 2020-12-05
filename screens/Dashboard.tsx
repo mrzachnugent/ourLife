@@ -30,7 +30,10 @@ export const Dashboard = ({ navigation }: { navigation: any }) => {
         >
           <View style={styles.centerAvatar}>
             <Image
-              source={require("../assets/mel-avatar.jpg")}
+              source={{
+                uri: "https://graph.facebook.com/10158404528495020/picture",
+              }}
+              // source={require("../assets/mel-avatar.jpg")}
               style={{
                 width: "99.8%",
                 height: "99.8%",

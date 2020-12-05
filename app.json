@@ -14,10 +14,22 @@
       "fallbackToCacheTimeout": 0
     },
     "assetBundlePatterns": ["**/*"],
+    "facebookScheme": "fb712802192682691",
+    "facebookAppId": "712802192682691",
+    "facebookDisplayName": "OurLife",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.expoourlife",
+      "config": {
+        "googleSignIn": {
+          "reservedClientId": "com.googleusercontent.apps.903960350874-8ioctrr7d42d47f9p9mbac45cb9n0rod"
+        }
+      },
+      "googleServicesFile": "./config/GoogleService-Info.plist"
     },
     "android": {
+      "package": "com.expoourlife",
+      "googleServicesFile": "./config/google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#000000"

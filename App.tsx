@@ -2,7 +2,7 @@
 // comment above : prevents preservation of React local state in function components and hooks
 import React, { useState } from "react";
 import { LogBox } from "react-native";
-import * as firebase from "firebase";
+import firebase from "firebase";
 import "firebase/firestore";
 import { StatusBar } from "expo-status-bar";
 import { AppLoading } from "expo";

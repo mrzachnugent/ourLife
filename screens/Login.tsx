@@ -1,9 +1,73 @@
 import React, { FC } from "react";
-import { Text, View, Image, StyleSheet } from "react-native";
-import { TouchableHighlight } from "react-native-gesture-handler";
+import { Text, View, Image, StyleSheet, Alert, Platform } from "react-native";
+import {
+  TouchableHighlight,
+  TouchableOpacity,
+} from "react-native-gesture-handler";
+import firebase from "firebase";
+import "firebase/firestore";
+
+import * as Facebook from "expo-facebook";
+import * as GoogleSignIn from "expo-google-sign-in";
+
 import { colors } from "../styles/globalStyles";
 
 export const Login = ({ navigation }: { navigation: any }) => {
+  const onLoginSuccess = () => navigation.navigate("UploadAvatar");
+  const onLoginFailure = () => console.log("failed to login");
+
+  //only works after build....
+  const logingWithGoogle = async () => {
+    try {
+      await GoogleSignIn.askForPlayServicesAsync();
+      const { type, user } = await GoogleSignIn.signInAsync();
+      const data = GoogleSignIn.GoogleAuthentication.prototype.toJSON();
+      if (type === "success") {
+        await firebase
+          .auth()
+          .setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+        const creditial = firebase.auth.GoogleAuthProvider.credential(
+          data.idToken,
+          data.accessToken
+        );
+        const googleProfileData = await firebase
+          .auth()
+          .signInWithCredential(creditial);
+        onLoginSuccess();
+      }
+    } catch ({ message }) {
+      alert(`Google login error: ${message}`);
+    }
+  };
+
+  const logInWithFacebook = async () => {
+    try {
+      await Facebook.initializeAsync({ appId: "712802192682691" });
+      const { type, token } = await Facebook.logInWithReadPermissionsAsync({
+        permissions: ["public_profile", "email"],
+      });
+      if (type === "success") {
+        await firebase
+          .auth()
+          .setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+        const credentials = firebase.auth.FacebookAuthProvider.credential(
+          token
+        );
+        const facebookProfileData = await firebase
+          .auth()
+          .signInWithCredential(credentials);
+        const response = await fetch(
+          `https://graph.facebook.com/me?access_token=${token}`
+        );
+
+        Alert.alert("logged in", `Hi ${(await response.json()).name}`);
+        onLoginSuccess();
+      }
+    } catch ({ message }) {
+      alert(`Facebook login error: ${message}`);
+    }
+  };
+
   return (
     <View style={styles.black}>
       <View style={styles.background}>
@@ -24,9 +88,22 @@ export const Login = ({ navigation }: { navigation: any }) => {
           <Text style={styles.smallText}>Sign up/ Log in with:</Text>
         </View>
         <View>
-          <Text style={styles.smallText}>GOOGLE</Text>
-          <Text style={styles.smallText}>FACEBOOK</Text>
-          <Text style={styles.smallText}>APPLE</Text>
+          {Platform.OS === "android" && (
+            <TouchableOpacity onPress={logingWithGoogle}>
+              <Text style={styles.smallText}>GOOGLE</Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity
+            style={{ marginVertical: 50 }}
+            onPress={logInWithFacebook}
+          >
+            <Text style={styles.smallText}>FACEBOOK</Text>
+          </TouchableOpacity>
+          {Platform.OS === "ios" && (
+            <TouchableOpacity>
+              <Text style={styles.smallText}>APPLE</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </View>
