@@ -72,4 +72,28 @@ export const globalStyles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E3EDF730",
   },
+
+  inputContainer: {
+    width: 300,
+    height: 50,
+    justifyContent: "center",
+    borderRadius: 7,
+    borderWidth: 2,
+    borderColor: "#111111",
+  },
+
+  input: {
+    paddingHorizontal: 20,
+    fontSize: 18,
+    color: colors.white,
+    fontFamily: "montserrat-regular",
+  },
+
+  littleText: {
+    color: colors.white,
+    textAlign: "center",
+    paddingHorizontal: 20,
+    fontSize: 17,
+    lineHeight: 25,
+  },
 });

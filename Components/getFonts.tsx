@@ -1,6 +1,6 @@
 import * as Font from "expo-font";
 
-export const getFonts = () =>
+export const getFonts = async () =>
   Font.loadAsync({
     "montserrat-regular": require("../assets/fonts/Montserrat-Regular.ttf"),
     "montserrat-medium": require("../assets/fonts/Montserrat-Medium.ttf"),

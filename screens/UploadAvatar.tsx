@@ -1,14 +1,35 @@
 import React from "react";
-import { Text, View, Image, StyleSheet } from "react-native";
+import { Text, View, Image, StyleSheet, Alert } from "react-native";
+import firebase, { storage } from "firebase";
+import "firebase/firestore";
+import "firebase/storage";
 import { colors } from "../styles/globalStyles";
 import { LinearGradient } from "expo-linear-gradient";
 import { globalStyles } from "../styles/globalStyles";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import * as ImagePicker from "expo-image-picker";
 import { MaterialIcons } from "@expo/vector-icons";
+import { DismissKeyboard } from "../Components/DismissKeyboard";
+import { useDispatch, useSelector } from "react-redux";
+import { avatarSrcUpdate, loaded, loading } from "../actions";
+import { LoadingIndicator } from "../Components/LoadingIndicator";
+
+const storageRef = firebase.storage().ref();
+const db = firebase.firestore();
+const usersRef = db.collection("users");
 
 export const UploadAvatar = ({ navigation }: { navigation: any }) => {
-  const [image, setImage] = React.useState<string | null>(null);
+  const dispatch = useDispatch();
+  const appInfo = useSelector((state: any) => state);
+  const userInfo = useSelector((state: any) => state.user);
+
+  const onUploadSuccess = () => {
+    if (!userInfo.relationshipId) {
+      navigation.navigate("ShareYourLink");
+      return;
+    }
+    navigation.navigate("Dashboard");
+  };
 
   const handlePress = async () => {
     const { status } = await ImagePicker.requestCameraRollPermissionsAsync();
@@ -23,22 +44,38 @@ export const UploadAvatar = ({ navigation }: { navigation: any }) => {
       aspect: [4, 4],
     });
     if (!chosenPic.cancelled) {
-      setImage(chosenPic.uri);
+      dispatch(loading());
+      const imageName = Math.random().toString(36).substring(7);
+      try {
+        const getImage = await fetch(chosenPic.uri);
+        const blob = await getImage.blob();
+
+        const imageRef = storageRef.child(imageName);
+        await imageRef.put(blob);
+        const imageURL = await imageRef.getDownloadURL();
+        await usersRef.doc(userInfo.uid).update({ avatarSrc: imageURL });
+        dispatch(avatarSrcUpdate(imageURL));
+        dispatch(loaded());
+        onUploadSuccess();
+      } catch (err) {
+        Alert.alert("UH OH!", err.message);
+        dispatch(loaded());
+      }
     }
   };
 
   return (
-    <View style={styles.black}>
-      <View style={styles.background}>
-        <View style={{ alignItems: "center" }}>
+    <DismissKeyboard>
+      <View style={styles.black}>
+        {appInfo.loadingState && <LoadingIndicator />}
+        <View style={styles.background}>
           <Image
             source={require("../assets/dancing-panda.png")}
-            style={{ height: 215, width: 218, marginBottom: 30 }}
+            style={{ height: 180, width: 180, marginBottom: 30 }}
           />
-          <Text style={styles.heading}>Upload an avatar</Text>
-        </View>
-
-        {!image ? (
+          <View style={{ alignItems: "center" }}>
+            <Text style={styles.heading}>Upload an avatar</Text>
+          </View>
           <LinearGradient
             start={{ x: 0.0, y: 0 }}
             end={{ x: 1, y: 1 }}
@@ -54,16 +91,16 @@ export const UploadAvatar = ({ navigation }: { navigation: any }) => {
               <Text style={globalStyles.titleText}>UPLOAD</Text>
             </TouchableOpacity>
           </LinearGradient>
-        ) : (
-          <Image source={{ uri: image }} style={styles.avatar} />
-        )}
+        </View>
+        <View style={styles.bottom}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("ShareYourLink")}
+          >
+            <Text style={globalStyles.littleText}>skip</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-      <View style={styles.bottom}>
-        <TouchableOpacity onPress={() => navigation.navigate("ShareYourLink")}>
-          <Text style={styles.littleButton}>skip</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+    </DismissKeyboard>
   );
 };
 
@@ -84,6 +121,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 40,
     borderBottomRightRadius: 40,
     paddingTop: 50,
+    minHeight: 300,
   },
   smallText: {
     color: colors.white,

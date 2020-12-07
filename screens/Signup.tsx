@@ -1,4 +1,4 @@
-import React, { FC, useState, useEffect } from "react";
+import React, { FC, useEffect, useState } from "react";
 import { Text, View, Image, StyleSheet, Alert, TextInput } from "react-native";
 import {
   TouchableHighlight,
@@ -9,31 +9,39 @@ import "firebase/firestore";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Entypo } from "@expo/vector-icons";
 import { FontAwesome5 } from "@expo/vector-icons";
-import { Feather } from "@expo/vector-icons";
 
 import { colors, globalStyles } from "../styles/globalStyles";
 import { LinearGradient } from "expo-linear-gradient";
 import { DismissKeyboard } from "../Components/DismissKeyboard";
+import { LoadingIndicator } from "../Components/LoadingIndicator";
 import { useDispatch, useSelector } from "react-redux";
 import { loaded, loading, loggedIn } from "../actions";
-import { LoadingIndicator } from "../Components/LoadingIndicator";
-import apiKeys from "../config/keys";
+import { diffClamp } from "react-native-reanimated";
 
-if (!firebase.apps.length) {
-  firebase.initializeApp(apiKeys.firebaseConfig);
-}
-
-export const Login = ({ navigation }: { navigation: any }) => {
+export const Signup = ({ navigation }: { navigation: any }) => {
   const dispatch = useDispatch();
-  const userInfo = useSelector((state: any) => state.user);
   const appInfo = useSelector((state: any) => state);
+  const userInfo = useSelector((state: any) => state.user);
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitEnabled, setSubmitEnabled] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
 
   //access firestore
   const db = firebase.firestore();
+
+  const ValidateEmail = (email: string) => {
+    if (
+      /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(
+        email
+      )
+    ) {
+      return true;
+    }
+    return false;
+  };
 
   const onLoginSuccess = () => {
     if (!userInfo.avatarSrc) {
@@ -49,7 +57,7 @@ export const Login = ({ navigation }: { navigation: any }) => {
 
   useEffect(() => {
     let isMounted = true;
-    if (email.length > 4 && password.length) {
+    if (name.length > 1 && email.length > 8 && password.length) {
       setSubmitEnabled(true);
     } else {
       setSubmitEnabled(false);
@@ -58,23 +66,50 @@ export const Login = ({ navigation }: { navigation: any }) => {
     return () => {
       isMounted = false;
     };
-  }, [email, password]);
+  }, [email, password, name]);
 
-  const handleLoginSubmit = async () => {
+  const handleSignupSubmit = async () => {
+    if (!ValidateEmail(email)) {
+      Alert.alert("Please try again", "You entered an invalid email address.");
+      return;
+    }
     dispatch(loading());
     try {
       firebase
         .auth()
-        .signInWithEmailAndPassword(email, password)
+        .createUserWithEmailAndPassword(email, password)
+        .then((creds) => {
+          const halfId = Math.random().toString(36).substring(4);
+          db.collection("users").doc(creds.user?.uid).set({
+            uid: creds.user?.uid,
+            name: name,
+            email: creds.user?.email,
+            phoneNumber: null,
+            avatarSrc: null,
+            halfId: halfId,
+            relationshipId: null,
+            partnerNickname: null,
+            partnerAvatarSrc: null,
+            notfiyMsg: true,
+            notifyGroceries: false,
+            notifyToDo: false,
+          });
+          db.collection("halfId").doc(halfId).set({
+            uid: creds.user?.uid,
+            relationshipId: null,
+          });
+        })
         .then(() => {
           dispatch(loggedIn());
           onLoginSuccess();
           dispatch(loaded());
         })
         .catch((err) => {
-          const errorMsg = err.message;
           dispatch(loaded());
-          Alert.alert("UH OH!", errorMsg);
+          Alert.alert(
+            "Email address already in use",
+            `If you already have an account, please use the log in button at the bottom left.`
+          );
         });
     } catch (err) {
       dispatch(loaded());
@@ -97,11 +132,11 @@ export const Login = ({ navigation }: { navigation: any }) => {
               style={{ alignItems: "center" }}
             >
               <Image
-                source={require("../assets/yoga-sloth.png")}
-                style={{ height: 108, width: 100, marginBottom: 30 }}
+                source={require("../assets/donut-sloth.png")}
+                style={{ height: 108, width: 108, marginBottom: 30 }}
               />
             </TouchableHighlight>
-            <Text style={styles.smallText}>Log in:</Text>
+            <Text style={styles.smallText}>Sign up:</Text>
           </View>
 
           <View style={styles.form}>
@@ -113,8 +148,22 @@ export const Login = ({ navigation }: { navigation: any }) => {
               style={globalStyles.inputContainer}
             >
               <TextInput
+                placeholder="Enter name"
+                placeholderTextColor="#FFFFFF75"
+                style={globalStyles.input}
+                onChangeText={(text) => setName(text)}
+              />
+            </LinearGradient>
+            <LinearGradient
+              start={{ x: 0.0, y: 0.25 }}
+              end={{ x: 1, y: 1.0 }}
+              locations={[0, 1]}
+              colors={["#2C333A", "#2C333A"]}
+              style={globalStyles.inputContainer}
+            >
+              <TextInput
                 textContentType="emailAddress"
-                placeholder="Enter your email address"
+                placeholder="Enter email address"
                 placeholderTextColor="#FFFFFF75"
                 style={globalStyles.input}
                 onChangeText={(text) => setEmail(text)}
@@ -129,7 +178,7 @@ export const Login = ({ navigation }: { navigation: any }) => {
             >
               <TextInput
                 secureTextEntry={!showPassword}
-                placeholder="Enter your password"
+                placeholder="Enter password"
                 placeholderTextColor="#FFFFFF75"
                 style={globalStyles.input}
                 onChangeText={(text) => setPassword(text)}
@@ -162,12 +211,12 @@ export const Login = ({ navigation }: { navigation: any }) => {
                   ? {
                       ...globalStyles.btnContainer,
                       width: 300,
-                      marginTop: 25,
+                      marginVertical: 15,
                     }
                   : {
                       ...globalStyles.btnContainer,
                       width: 300,
-                      marginTop: 25,
+                      marginVertical: 15,
                       opacity: 0.5,
                     }
               }
@@ -175,26 +224,17 @@ export const Login = ({ navigation }: { navigation: any }) => {
               <TouchableOpacity
                 style={{ ...globalStyles.mainBtns, justifyContent: "center" }}
                 disabled={!submitEnabled}
-                onPress={handleLoginSubmit}
+                onPress={handleSignupSubmit}
               >
-                <Text style={globalStyles.titleText}>log in</Text>
-                <Feather
-                  name="log-in"
+                <Text style={globalStyles.titleText}>sign up</Text>
+                <FontAwesome5
+                  name="signature"
                   size={30}
                   color={colors.white}
                   style={styles.rightIcon}
                 />
               </TouchableOpacity>
             </LinearGradient>
-            <TouchableOpacity
-              onPress={() => Alert.alert("TO DO", "figure it out")}
-            >
-              <Text
-                style={{ ...styles.smallText, paddingTop: 25, opacity: 0.9 }}
-              >
-                Forgot Password?
-              </Text>
-            </TouchableOpacity>
           </View>
         </View>
         <TouchableOpacity
@@ -204,9 +244,9 @@ export const Login = ({ navigation }: { navigation: any }) => {
             flexDirection: "row",
             justifyContent: "flex-start",
           }}
-          onPress={() => navigation.navigate("Signup")}
+          onPress={() => navigation.navigate("Login")}
         >
-          <Text style={globalStyles.littleText}>sign up</Text>
+          <Text style={globalStyles.littleText}>log in</Text>
         </TouchableOpacity>
       </View>
     </DismissKeyboard>
@@ -253,7 +293,7 @@ const styles = StyleSheet.create({
   },
 
   form: {
-    height: 250,
+    height: 270,
     justifyContent: "space-between",
   },
 });

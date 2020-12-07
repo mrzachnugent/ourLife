@@ -5,27 +5,36 @@ import { TouchableOpacity } from "react-native-gesture-handler";
 import { globalStyles, colors } from "../styles/globalStyles";
 import { MaterialIcons } from "@expo/vector-icons";
 import { GiftedChat } from "react-native-gifted-chat";
+import { DismissKeyboard } from "../Components/DismissKeyboard";
 
 export const Chat = ({ navigation }: { navigation: any }) => {
   return (
-    <SafeAreaView style={globalStyles.androidSafeArea}>
-      <View style={styles.container}>
-        <TouchableOpacity onPress={() => navigation.navigate("Dashboard")}>
-          <MaterialIcons name="arrow-back" size={30} color={colors.white} />
-        </TouchableOpacity>
-        <View style={styles.heading}>
-          <Text style={globalStyles.pageTitleText}>CHAT</Text>
-          <Image
-            source={require("../assets/unicorn.png")}
-            style={{ width: 30, height: 60 }}
-          />
+    <DismissKeyboard>
+      <SafeAreaView style={globalStyles.androidSafeArea}>
+        <View style={styles.container}>
+          <TouchableOpacity onPress={() => navigation.navigate("Dashboard")}>
+            <MaterialIcons name="arrow-back" size={30} color={colors.white} />
+          </TouchableOpacity>
+          <View style={styles.heading}>
+            <Text style={globalStyles.pageTitleText}>CHAT</Text>
+            <Image
+              source={require("../assets/unicorn.png")}
+              style={{ width: 30, height: 60 }}
+            />
+          </View>
+          <TouchableOpacity
+            onPress={() =>
+              alert(
+                "Their phone number missing from their profile. You can edit their phone number by pressing on their avatar on the Dashboard Screen."
+              )
+            }
+          >
+            <MaterialIcons name="phone" size={30} color={colors.white} />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity>
-          <MaterialIcons name="phone" size={30} color={colors.white} />
-        </TouchableOpacity>
-      </View>
-      <GiftedChat />
-    </SafeAreaView>
+        <GiftedChat />
+      </SafeAreaView>
+    </DismissKeyboard>
   );
 };
 

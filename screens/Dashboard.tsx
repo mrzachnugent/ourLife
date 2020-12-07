@@ -1,12 +1,22 @@
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
+import React, { useEffect } from "react";
 import { View, Text, StyleSheet, Platform, Image } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { MaterialIcons } from "@expo/vector-icons";
 
 import { colors, globalStyles } from "../styles/globalStyles";
+import { useSelector } from "react-redux";
 
 export const Dashboard = ({ navigation }: { navigation: any }) => {
+  const userInfo = useSelector((state: any) => state.user);
+
+  useEffect(() => {
+    let isMounted = true;
+    return () => {
+      isMounted = false;
+    };
+  });
+
   return (
     <View style={globalStyles.noSafeArea}>
       <View style={styles.safeShapeContainer}>
@@ -15,13 +25,36 @@ export const Dashboard = ({ navigation }: { navigation: any }) => {
             onPress={() => navigation.navigate("Settings")}
             style={styles.smallbtn}
           >
-            <MaterialIcons name="settings" size={24} color={colors.white} />
+            <MaterialIcons
+              name="settings"
+              size={24}
+              color={colors.white}
+              style={{ padding: 10 }}
+            />
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => navigation.navigate("MyAccount")}
             style={styles.smallbtn}
           >
-            <MaterialIcons name="person" size={25} color={colors.white} />
+            {userInfo.avatarSrc ? (
+              <Image
+                // source={require("../assets/mel-avatar.jpg")}
+                source={{ uri: userInfo.avatarSrc }}
+                style={{
+                  width: 55,
+                  height: 55,
+                  opacity: 1,
+                  borderRadius: 500,
+                }}
+              />
+            ) : (
+              <MaterialIcons
+                name="person"
+                size={25}
+                color={colors.white}
+                style={{ padding: 10 }}
+              />
+            )}
           </TouchableOpacity>
         </View>
         <TouchableOpacity
@@ -29,19 +62,19 @@ export const Dashboard = ({ navigation }: { navigation: any }) => {
           style={styles.shadow}
         >
           <View style={styles.centerAvatar}>
-            <Image
-              source={{
-                uri: "https://graph.facebook.com/10158404528495020/picture",
-              }}
-              // source={require("../assets/mel-avatar.jpg")}
-              style={{
-                width: "99.8%",
-                height: "99.8%",
-                opacity: 1,
-                borderRadius: 500,
-              }}
-            />
-            {/* <MaterialIcons name="person" size={200} color={colors.white} /> */}
+            {userInfo.partnerAvatarSrc ? (
+              <Image
+                source={{ uri: userInfo.partnerAvatarSrc }}
+                style={{
+                  width: "99.8%",
+                  height: "99.8%",
+                  opacity: 1,
+                  borderRadius: 500,
+                }}
+              />
+            ) : (
+              <MaterialIcons name="person" size={200} color={colors.white} />
+            )}
           </View>
         </TouchableOpacity>
       </View>
@@ -181,7 +214,6 @@ const styles = StyleSheet.create({
 
   smallbtn: {
     backgroundColor: colors.black,
-    padding: 10,
     borderRadius: 500,
     shadowColor: "#000",
     shadowOffset: {
