@@ -93,9 +93,7 @@ export const UploadAvatar = ({ navigation }: { navigation: any }) => {
           </LinearGradient>
         </View>
         <View style={styles.bottom}>
-          <TouchableOpacity
-            onPress={() => navigation.navigate("ShareYourLink")}
-          >
+          <TouchableOpacity onPress={onUploadSuccess}>
             <Text style={globalStyles.littleText}>skip</Text>
           </TouchableOpacity>
         </View>

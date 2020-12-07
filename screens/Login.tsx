@@ -18,6 +18,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { loaded, loading, loggedIn } from "../actions";
 import { LoadingIndicator } from "../Components/LoadingIndicator";
 import apiKeys from "../config/keys";
+import { ValidateEmail } from "../utilities";
 
 if (!firebase.apps.length) {
   firebase.initializeApp(apiKeys.firebaseConfig);
@@ -80,6 +81,19 @@ export const Login = ({ navigation }: { navigation: any }) => {
       dispatch(loaded());
       Alert.alert(err);
     }
+  };
+
+  const handleEmailReset = () => {
+    firebase
+      .auth()
+      .sendPasswordResetEmail(email)
+      .then(() =>
+        Alert.alert(
+          "Check your inbox",
+          "You will be recieving a link to reset your password shortly."
+        )
+      )
+      .catch((err) => Alert.alert("OH NO!", err.message));
   };
 
   return (
@@ -187,10 +201,15 @@ export const Login = ({ navigation }: { navigation: any }) => {
               </TouchableOpacity>
             </LinearGradient>
             <TouchableOpacity
-              onPress={() => Alert.alert("TO DO", "figure it out")}
+              onPress={handleEmailReset}
+              disabled={!ValidateEmail(email)}
             >
               <Text
-                style={{ ...styles.smallText, paddingTop: 25, opacity: 0.9 }}
+                style={
+                  ValidateEmail(email)
+                    ? { ...styles.smallText, paddingTop: 25, opacity: 0.9 }
+                    : { ...styles.smallText, paddingTop: 25, opacity: 0.4 }
+                }
               >
                 Forgot Password?
               </Text>

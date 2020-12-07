@@ -72,7 +72,6 @@ export const MyAccount = ({ navigation }: { navigation: any }) => {
     } else {
       setPhoneEnableSave(false);
     }
-
     return () => {
       isMounted = false;
     };
@@ -120,143 +119,159 @@ export const MyAccount = ({ navigation }: { navigation: any }) => {
   };
 
   return (
-    <DismissKeyboard>
-      <SafeAreaView style={{ ...globalStyles.androidSafeArea, paddingTop: 20 }}>
-        {appInfo.loadingState && <LoadingIndicator />}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.navigate("Dashboard")}>
-            <MaterialIcons name="arrow-back" size={30} color={colors.white} />
-          </TouchableOpacity>
-          <TouchableHighlight>
-            <Text style={globalStyles.titleText}>My Account</Text>
-          </TouchableHighlight>
-          <View />
-        </View>
-        <View style={styles.body}>
-          <TouchableOpacity
-            onPress={handlePress}
-            style={{ ...styles.shadow, marginBottom: -25 }}
-          >
-            <View style={styles.centerAvatar}>
-              {userInfo.avatarSrc ? (
-                <Image
-                  // source={require("../assets/mel-avatar.jpg")}
-                  source={{ uri: userInfo.avatarSrc }}
-                  style={{
-                    width: "99.8%",
-                    height: "99.8%",
-                    opacity: 1,
-                    borderRadius: 500,
-                  }}
-                />
-              ) : (
-                <MaterialIcons name="person" size={150} color={colors.white} />
-              )}
+    <ScrollView style={styles.scroll}>
+      <DismissKeyboard>
+        <SafeAreaView
+          style={{ ...globalStyles.androidSafeArea, paddingTop: 20 }}
+        >
+          {appInfo.loadingState && <LoadingIndicator />}
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => navigation.navigate("Dashboard")}>
+              <MaterialIcons name="arrow-back" size={30} color={colors.white} />
+            </TouchableOpacity>
+            <TouchableHighlight>
+              <Text style={globalStyles.titleText}>My Account</Text>
+            </TouchableHighlight>
+            <View />
+          </View>
+          <View style={styles.body}>
+            <TouchableOpacity
+              onPress={handlePress}
+              style={{ ...styles.shadow, marginBottom: -15 }}
+            >
+              <View style={styles.centerAvatar}>
+                {userInfo.avatarSrc ? (
+                  <Image
+                    // source={require("../assets/mel-avatar.jpg")}
+                    source={{ uri: userInfo.avatarSrc }}
+                    style={{
+                      width: "99.8%",
+                      height: "99.8%",
+                      opacity: 1,
+                      borderRadius: 500,
+                    }}
+                  />
+                ) : (
+                  <MaterialIcons
+                    name="person"
+                    size={150}
+                    color={colors.white}
+                  />
+                )}
 
-              <View style={styles.overlay}>
-                <Text style={styles.normalText}>Change avatar</Text>
-                <MaterialIcons name="image" size={50} color={colors.white} />
+                <View style={styles.overlay}>
+                  <Text style={styles.normalText}>Change avatar</Text>
+                  <MaterialIcons name="image" size={50} color={colors.white} />
+                </View>
               </View>
-            </View>
-          </TouchableOpacity>
-          <Text style={styles.normalText}>{userInfo.name}</Text>
-          <Text style={styles.normalText}>
-            {userInfo.phoneNumber
-              ? displayPhoneNum(userInfo.phoneNumber)
-              : "(555) 555-5555"}
-          </Text>
-          <LinearGradient
-            start={{ x: 0.0, y: 0.25 }}
-            end={{ x: 1, y: 1.0 }}
-            locations={[0, 1]}
-            colors={["#2C333A", "#2C333A"]}
-            style={globalStyles.inputContainer}
-          >
-            <TextInput
-              placeholder="Change your name"
-              placeholderTextColor="#FFFFFF75"
-              style={globalStyles.input}
-              onChangeText={(text) => setName(text)}
-            />
-          </LinearGradient>
-          <LinearGradient
-            start={{ x: 0.0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            locations={[0, 0.9]}
-            colors={["#282C31", "#22262B"]}
-            style={{ ...globalStyles.btnContainer, width: 300 }}
-          >
-            <TouchableOpacity
-              style={globalStyles.mainBtns}
-              disabled={!enableNameSave}
-              onPress={onNameSave}
-            >
-              <Text
-                style={
-                  enableNameSave
-                    ? globalStyles.titleText
-                    : { ...globalStyles.titleText, opacity: 0.3 }
-                }
-              >
-                save name change
-              </Text>
             </TouchableOpacity>
-          </LinearGradient>
-          <LinearGradient
-            start={{ x: 0.0, y: 0.25 }}
-            end={{ x: 1, y: 1.0 }}
-            locations={[0, 1]}
-            colors={["#2C333A", "#2C333A"]}
-            style={globalStyles.inputContainer}
-          >
-            <TextInput
-              keyboardType="number-pad"
-              placeholder="Update Phone Number"
-              placeholderTextColor="#FFFFFF75"
-              style={globalStyles.input}
-              onChangeText={(text) => setPhone(text)}
-            />
-          </LinearGradient>
-          <LinearGradient
-            start={{ x: 0.0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            locations={[0, 0.9]}
-            colors={["#282C31", "#22262B"]}
-            style={{ ...globalStyles.btnContainer, width: 300 }}
-          >
-            <TouchableOpacity
-              style={globalStyles.mainBtns}
-              disabled={!enablePhoneSave}
-              onPress={onPhoneSave}
+            <Text style={styles.normalText}>{userInfo.name}</Text>
+            <Text style={styles.normalText}>
+              {userInfo.phoneNumber
+                ? displayPhoneNum(userInfo.phoneNumber)
+                : "(555) 555-5555"}
+            </Text>
+            <LinearGradient
+              start={{ x: 0.0, y: 0.25 }}
+              end={{ x: 1, y: 1.0 }}
+              locations={[0, 1]}
+              colors={["#2C333A", "#2C333A"]}
+              style={{
+                ...globalStyles.inputContainer,
+                marginTop: 40,
+                marginBottom: 20,
+              }}
             >
-              <Text
-                style={
-                  enablePhoneSave
-                    ? globalStyles.titleText
-                    : { ...globalStyles.titleText, opacity: 0.3 }
-                }
+              <TextInput
+                placeholder="Change your name"
+                placeholderTextColor="#FFFFFF75"
+                style={globalStyles.input}
+                onChangeText={(text) => setName(text)}
+              />
+            </LinearGradient>
+            <LinearGradient
+              start={{ x: 0.0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              locations={[0, 0.9]}
+              colors={["#282C31", "#22262B"]}
+              style={{ ...globalStyles.btnContainer, width: 300 }}
+            >
+              <TouchableOpacity
+                style={globalStyles.mainBtns}
+                disabled={!enableNameSave}
+                onPress={onNameSave}
               >
-                save phone number
-              </Text>
-            </TouchableOpacity>
-          </LinearGradient>
-          <TouchableHighlight
-            style={{ marginBottom: 15 }}
-            onPress={() =>
-              firebase
-                .auth()
-                .signOut()
-                .then(() => {
-                  dispatch(loggedOut());
-                })
-                .then(() => navigation.navigate("Login"))
-            }
-          >
-            <Text style={styles.normalText}>log out</Text>
-          </TouchableHighlight>
-        </View>
-      </SafeAreaView>
-    </DismissKeyboard>
+                <Text
+                  style={
+                    enableNameSave
+                      ? globalStyles.titleText
+                      : { ...globalStyles.titleText, opacity: 0.3 }
+                  }
+                >
+                  save name change
+                </Text>
+              </TouchableOpacity>
+            </LinearGradient>
+            <LinearGradient
+              start={{ x: 0.0, y: 0.25 }}
+              end={{ x: 1, y: 1.0 }}
+              locations={[0, 1]}
+              colors={["#2C333A", "#2C333A"]}
+              style={{
+                ...globalStyles.inputContainer,
+                marginTop: 40,
+                marginBottom: 20,
+              }}
+            >
+              <TextInput
+                keyboardType="number-pad"
+                placeholder="Update Phone Number"
+                placeholderTextColor="#FFFFFF75"
+                style={globalStyles.input}
+                onChangeText={(text) => setPhone(text)}
+              />
+            </LinearGradient>
+            <LinearGradient
+              start={{ x: 0.0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              locations={[0, 0.9]}
+              colors={["#282C31", "#22262B"]}
+              style={{ ...globalStyles.btnContainer, width: 300 }}
+            >
+              <TouchableOpacity
+                style={globalStyles.mainBtns}
+                disabled={!enablePhoneSave}
+                onPress={onPhoneSave}
+              >
+                <Text
+                  style={
+                    enablePhoneSave
+                      ? globalStyles.titleText
+                      : { ...globalStyles.titleText, opacity: 0.3 }
+                  }
+                >
+                  save phone number
+                </Text>
+              </TouchableOpacity>
+            </LinearGradient>
+            <TouchableHighlight
+              style={{ marginVertical: 30 }}
+              onPress={() =>
+                firebase
+                  .auth()
+                  .signOut()
+                  .then(() => {
+                    dispatch(loggedOut());
+                  })
+                  .then(() => navigation.navigate("Login"))
+              }
+            >
+              <Text style={styles.normalText}>log out</Text>
+            </TouchableHighlight>
+          </View>
+        </SafeAreaView>
+      </DismissKeyboard>
+    </ScrollView>
   );
 };
 
@@ -265,14 +280,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     paddingHorizontal: 20,
+    marginBottom: 10,
   },
   body: {
-    flex: 1,
     alignItems: "center",
-    marginTop: 25,
+    marginVertical: 25,
     justifyContent: "space-between",
-    minHeight: 500,
   },
+
+  scroll: {},
 
   centerAvatar: {
     justifyContent: "center",
@@ -311,7 +327,7 @@ const styles = StyleSheet.create({
     color: colors.white,
     textAlign: "center",
     fontSize: 18,
-    fontFamily: "montserrat-bold",
+    fontFamily: "montserrat-semi-bold",
     textShadowColor: "#00000020",
     textShadowOffset: { width: -1, height: 6 },
     textShadowRadius: 10,

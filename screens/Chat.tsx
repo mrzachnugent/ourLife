@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View, Text, SafeAreaView, Image, StyleSheet } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 
@@ -8,6 +8,13 @@ import { GiftedChat } from "react-native-gifted-chat";
 import { DismissKeyboard } from "../Components/DismissKeyboard";
 
 export const Chat = ({ navigation }: { navigation: any }) => {
+  useEffect(() => {
+    let isMounted = true;
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   return (
     <DismissKeyboard>
       <SafeAreaView style={globalStyles.androidSafeArea}>

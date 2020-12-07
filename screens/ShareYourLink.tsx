@@ -5,10 +5,11 @@ import { LinearGradient } from "expo-linear-gradient";
 import { globalStyles } from "../styles/globalStyles";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import firebase from "firebase";
+import "firebase/firestore";
 
 import { MaterialIcons } from "@expo/vector-icons";
 import { DismissKeyboard } from "../Components/DismissKeyboard";
-import { loggedOut } from "../actions";
+import { loaded, loading, loggedOut, madeConnection } from "../actions";
 import { useDispatch, useSelector } from "react-redux";
 import { LoadingIndicator } from "../Components/LoadingIndicator";
 
@@ -18,6 +19,10 @@ export const ShareYourLink = ({ navigation }: { navigation: any }) => {
   const userInfo = useSelector((state: any) => state.user);
   const [connectorsCode, setConnectorsCode] = useState("");
   const [enableSubmit, setEnableSubmit] = useState(false);
+
+  const db = firebase.firestore();
+  const halfIdRef = db.collection("halfId");
+  const usersRef = db.collection("users");
 
   useEffect(() => {
     let isMounted = true;
@@ -39,6 +44,94 @@ export const ShareYourLink = ({ navigation }: { navigation: any }) => {
       });
     } catch (err) {
       Alert.alert("UH OH", err.message);
+    }
+  };
+
+  const handleOnConnect = async () => {
+    dispatch(loading());
+
+    try {
+      const doesExist = await halfIdRef.doc(connectorsCode).get();
+      if (!doesExist.exists) {
+        dispatch(loaded());
+        Alert.alert(
+          "UH OH",
+          "It seems like the connect code you entered does not exist."
+        );
+        return;
+      }
+      const inRelationship = doesExist.data();
+      console.log(inRelationship?.relationshipId);
+      if (inRelationship?.relationshipId) {
+        dispatch(loaded());
+        Alert.alert(
+          "UH OH",
+          "It seems like you are not connected to another user."
+        );
+        return;
+      }
+
+      const partnerUid = inRelationship?.uid;
+      const newRelationshipId = `${connectorsCode}_${userInfo.halfId}`;
+
+      //update partners halfId document
+      await halfIdRef
+        .doc(connectorsCode)
+        .update({ relationshipId: newRelationshipId });
+      //update partners user document
+      await usersRef.doc(partnerUid).update({
+        otherHalfUid: userInfo.uid,
+        relationshipId: newRelationshipId,
+      });
+      // update user halfId document
+      await halfIdRef
+        .doc(userInfo.halfId)
+        .update({ relationshipId: newRelationshipId });
+      //update user's user document
+      await usersRef.doc(userInfo.uid).update({
+        otherHalfUid: partnerUid,
+        relationshipId: newRelationshipId,
+      });
+      //update redux store
+      dispatch(
+        madeConnection({
+          relationshipId: newRelationshipId,
+          otherHalfUid: partnerUid,
+        })
+      );
+      dispatch(loaded());
+      navigation.navigate("Dashboard");
+    } catch (err) {
+      dispatch(loaded());
+      Alert.alert("Uh OH", err.message);
+    }
+  };
+
+  const handleAlreadyConnected = async () => {
+    dispatch(loading());
+    try {
+      const firestoreUser = await usersRef.doc(userInfo.uid).get();
+      const relationshipId = firestoreUser.data()?.relationshipId;
+      if (!relationshipId) {
+        Alert.alert(
+          "UH OH",
+          "It seems like you are not already connected to anyone."
+        );
+      } else {
+        dispatch(
+          madeConnection({
+            relationshipId: firestoreUser.data()?.relationshipId,
+            otherHalfUid: firestoreUser.data()?.otherHalfUid,
+          })
+        );
+        navigation.navigate("Dashboard");
+      }
+      dispatch(loaded());
+
+      return;
+    } catch (err) {
+      dispatch(loaded());
+      Alert.alert("Uh OH", err.message);
     }
   };
 
@@ -172,7 +265,7 @@ export const ShareYourLink = ({ navigation }: { navigation: any }) => {
               <TouchableOpacity
                 style={{ ...globalStyles.mainBtns, paddingVertical: 5 }}
                 disabled={enableSubmit}
-                onPress={() => navigation.navigate("Dashboard")}
+                onPress={handleOnConnect}
               >
                 <Text style={globalStyles.titleText}>connect</Text>
               </TouchableOpacity>
@@ -192,6 +285,9 @@ export const ShareYourLink = ({ navigation }: { navigation: any }) => {
             }
           >
             <Text style={styles.littleButton}>Log out</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={handleAlreadyConnected}>
+            <Text style={styles.littleButton}>Already Connected?</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -233,7 +329,7 @@ const styles = StyleSheet.create({
   bottom: {
     flex: 0.1,
     flexDirection: "row",
-    justifyContent: "flex-start",
+    justifyContent: "space-between",
     paddingHorizontal: 12,
     alignItems: "center",
     paddingTop: 25,

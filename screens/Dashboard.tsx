@@ -1,21 +1,70 @@
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect } from "react";
-import { View, Text, StyleSheet, Platform, Image } from "react-native";
-import { TouchableOpacity } from "react-native-gesture-handler";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Platform,
+  Image,
+  Dimensions,
+} from "react-native";
+import { ScrollView, TouchableOpacity } from "react-native-gesture-handler";
 import { MaterialIcons } from "@expo/vector-icons";
+import firebase from "firebase";
+import "firebase/firestore";
+
+import { updateUser } from "../actions";
 
 import { colors, globalStyles } from "../styles/globalStyles";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 export const Dashboard = ({ navigation }: { navigation: any }) => {
   const userInfo = useSelector((state: any) => state.user);
+  const db = firebase.firestore();
+  const usersRef = db.collection("users");
+  const dispatch = useDispatch();
+
+  const windowHeight = Dimensions.get("window").height;
+
+  const updatePartnerInfo = async () => {
+    const getPartnerInfo = await usersRef.doc(userInfo.otherHalfUid).get();
+    if (!userInfo.partnerNickname) {
+      dispatch(
+        updateUser({
+          partnerNickname: getPartnerInfo.data()?.name,
+        })
+      );
+    }
+    if (!userInfo.partnerAvatarSrc) {
+      dispatch(
+        updateUser({
+          partnerAvatarSrc: getPartnerInfo.data()?.avatarSrc,
+        })
+      );
+    }
+    if (!userInfo.partnerPhoneNumber) {
+      dispatch(
+        updateUser({
+          partnerPhoneNumber: getPartnerInfo.data()?.phoneNumber,
+        })
+      );
+    }
+    return;
+  };
 
   useEffect(() => {
     let isMounted = true;
+
+    updatePartnerInfo();
+
     return () => {
+      console.log("dashboard unmounted");
       isMounted = false;
     };
-  });
+  }, []);
+
+  //TO DO
+  //SOMEHOW REFRESH (maybe button) when other user updates something
 
   return (
     <View style={globalStyles.noSafeArea}>

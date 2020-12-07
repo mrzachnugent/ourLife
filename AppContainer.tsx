@@ -121,7 +121,7 @@ export default function AppContainer() {
             }}
           />
         )}
-        {appInfo.isLoggedIn && (
+        {appInfo.isLoggedIn && userInfo.relationshipId && (
           <Stack.Screen
             name="Dashboard"
             component={Dashboard}
@@ -130,7 +130,7 @@ export default function AppContainer() {
             }}
           />
         )}
-        {appInfo.isLoggedIn && (
+        {appInfo.isLoggedIn && userInfo.relationshipId && (
           <Stack.Screen
             name="Chat"
             component={Chat}
@@ -140,7 +140,7 @@ export default function AppContainer() {
             }}
           />
         )}
-        {appInfo.isLoggedIn && (
+        {appInfo.isLoggedIn && userInfo.relationshipId && (
           <Stack.Screen
             name="Groceries"
             component={Groceries}
@@ -150,7 +150,7 @@ export default function AppContainer() {
             }}
           />
         )}
-        {appInfo.isLoggedIn && (
+        {appInfo.isLoggedIn && userInfo.relationshipId && (
           <Stack.Screen
             name="ToDo"
             component={ToDo}
@@ -160,7 +160,7 @@ export default function AppContainer() {
             }}
           />
         )}
-        {appInfo.isLoggedIn && (
+        {appInfo.isLoggedIn && userInfo.relationshipId && (
           <Stack.Screen
             name="Settings"
             component={Settings}
@@ -171,7 +171,7 @@ export default function AppContainer() {
             }}
           />
         )}
-        {appInfo.isLoggedIn && (
+        {appInfo.isLoggedIn && userInfo.relationshipId && (
           <Stack.Screen
             name="MyAccount"
             component={MyAccount}
@@ -182,7 +182,7 @@ export default function AppContainer() {
             }}
           />
         )}
-        {appInfo.isLoggedIn && (
+        {appInfo.isLoggedIn && userInfo.relationshipId && (
           <Stack.Screen
             name="TheirAccount"
             component={TheirAccount}

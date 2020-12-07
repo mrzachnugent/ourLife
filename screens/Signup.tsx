@@ -17,6 +17,7 @@ import { LoadingIndicator } from "../Components/LoadingIndicator";
 import { useDispatch, useSelector } from "react-redux";
 import { loaded, loading, loggedIn } from "../actions";
 import { diffClamp } from "react-native-reanimated";
+import { ValidateEmail } from "../utilities";
 
 export const Signup = ({ navigation }: { navigation: any }) => {
   const dispatch = useDispatch();
@@ -31,17 +32,6 @@ export const Signup = ({ navigation }: { navigation: any }) => {
 
   //access firestore
   const db = firebase.firestore();
-
-  const ValidateEmail = (email: string) => {
-    if (
-      /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/.test(
-        email
-      )
-    ) {
-      return true;
-    }
-    return false;
-  };
 
   const onLoginSuccess = () => {
     if (!userInfo.avatarSrc) {
@@ -88,8 +78,10 @@ export const Signup = ({ navigation }: { navigation: any }) => {
             avatarSrc: null,
             halfId: halfId,
             relationshipId: null,
+            otherHalfUid: "",
             partnerNickname: null,
             partnerAvatarSrc: null,
+            partnerPhoneNumber: null,
             notfiyMsg: true,
             notifyGroceries: false,
             notifyToDo: false,
@@ -101,8 +93,11 @@ export const Signup = ({ navigation }: { navigation: any }) => {
         })
         .then(() => {
           dispatch(loggedIn());
-          onLoginSuccess();
+
           dispatch(loaded());
+        })
+        .then(() => {
+          onLoginSuccess();
         })
         .catch((err) => {
           dispatch(loaded());

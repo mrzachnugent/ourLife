@@ -37,3 +37,13 @@ export const avatarSrcUpdate = (url: any) => ({
   type: "AVATAR_SRC_UPDATE",
   payload: url,
 });
+
+export const madeConnection = (obj: any) => ({
+  type: "MADE_CONNECTION",
+  payload: obj,
+});
+
+export const updateUser = (obj: any) => ({
+  type: "UPDATE_USER",
+  payload: obj,
+});
