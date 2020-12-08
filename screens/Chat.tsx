@@ -1,19 +1,105 @@
-import React, { useEffect } from "react";
-import { View, Text, SafeAreaView, Image, StyleSheet } from "react-native";
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  SafeAreaView,
+  Image,
+  StyleSheet,
+  Alert,
+  Linking,
+} from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import firebase from "firebase";
+import "firebase/firestore";
 
 import { globalStyles, colors } from "../styles/globalStyles";
 import { MaterialIcons } from "@expo/vector-icons";
-import { GiftedChat } from "react-native-gifted-chat";
+import { Bubble, GiftedChat } from "react-native-gifted-chat";
 import { DismissKeyboard } from "../Components/DismissKeyboard";
+import { useSelector } from "react-redux";
 
 export const Chat = ({ navigation }: { navigation: any }) => {
+  const userInfo = useSelector((state: any) => state.user);
+
+  const [messages, setMessages] = useState([]);
+  const db = firebase.firestore();
+
+  const messagesRef = db
+    .collection("chatRooms")
+    .doc(`room_${userInfo.relationshipId}`)
+    .collection("messages");
+
+  const user = {
+    _id: userInfo.uid,
+    name: userInfo.name,
+    avatar: userInfo.avatarSrc,
+  };
+
+  const appendMessages = useCallback(
+    (messages) => {
+      setMessages((previousMessage) =>
+        GiftedChat.append(previousMessage, messages)
+      );
+    },
+    [messages]
+  );
+
+  const handleSend = async (messages: []) => {
+    const write = messages.map((m) => messagesRef.add(m));
+    await Promise.all(write);
+  };
+
   useEffect(() => {
-    let isMounted = true;
-    return () => {
-      isMounted = false;
-    };
+    const unsubscribe = messagesRef.onSnapshot((querySnashot) => {
+      const messagesFirestore = querySnashot
+        .docChanges()
+        .filter(({ type }) => type === "added")
+        .map(({ doc }) => {
+          const message = doc.data();
+          return { ...message, createdAt: message.createdAt.toDate() };
+        })
+        .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      appendMessages(messagesFirestore);
+    });
+
+    return () => unsubscribe();
   }, []);
+
+  const renderBubble = (props: any) => {
+    return (
+      <Bubble
+        {...props}
+        wrapperStyle={{
+          right: {
+            backgroundColor: "#019EF4",
+          },
+          left: {
+            backgroundColor: "#9C14C4",
+          },
+        }}
+        textStyle={{
+          right: {
+            color: "#fff",
+          },
+          left: {
+            color: "#fff",
+          },
+        }}
+      />
+    );
+  };
+
+  const handleMakeCall = () => {
+    if (!userInfo.partnerPhoneNumber) {
+      Alert.alert(
+        "Missing Info",
+        "Their phone number missing from their profile. Ask them to update their phone number."
+      );
+      return;
+    } else {
+      Linking.openURL(`tel:${userInfo.partnerPhoneNumber}`);
+    }
+  };
 
   return (
     <DismissKeyboard>
@@ -29,17 +115,18 @@ export const Chat = ({ navigation }: { navigation: any }) => {
               style={{ width: 30, height: 60 }}
             />
           </View>
-          <TouchableOpacity
-            onPress={() =>
-              alert(
-                "Their phone number missing from their profile. You can edit their phone number by pressing on their avatar on the Dashboard Screen."
-              )
-            }
-          >
+          <TouchableOpacity onPress={handleMakeCall}>
             <MaterialIcons name="phone" size={30} color={colors.white} />
           </TouchableOpacity>
         </View>
-        <GiftedChat />
+
+        <GiftedChat
+          messages={messages}
+          user={user}
+          renderBubble={renderBubble}
+          renderUsernameOnMessage={true}
+          onSend={handleSend}
+        />
       </SafeAreaView>
     </DismissKeyboard>
   );

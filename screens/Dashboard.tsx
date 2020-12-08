@@ -1,14 +1,7 @@
 import { LinearGradient } from "expo-linear-gradient";
 import React, { useEffect } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Platform,
-  Image,
-  Dimensions,
-} from "react-native";
-import { ScrollView, TouchableOpacity } from "react-native-gesture-handler";
+import { View, Text, StyleSheet, Platform, Image, Alert } from "react-native";
+import { TouchableOpacity } from "react-native-gesture-handler";
 import { MaterialIcons } from "@expo/vector-icons";
 import firebase from "firebase";
 import "firebase/firestore";
@@ -24,32 +17,26 @@ export const Dashboard = ({ navigation }: { navigation: any }) => {
   const usersRef = db.collection("users");
   const dispatch = useDispatch();
 
-  const windowHeight = Dimensions.get("window").height;
-
   const updatePartnerInfo = async () => {
-    const getPartnerInfo = await usersRef.doc(userInfo.otherHalfUid).get();
-    if (!userInfo.partnerNickname) {
-      dispatch(
-        updateUser({
-          partnerNickname: getPartnerInfo.data()?.name,
-        })
-      );
+    try {
+      usersRef.doc(userInfo.otherHalfUid).onSnapshot((doc) => {
+        dispatch(
+          updateUser({
+            partnerName: doc.data()?.name,
+            partnerAvatarSrc: doc.data()?.avatarSrc,
+            partnerPhoneNumber: doc.data()?.phoneNumber,
+            otherHalfUid: doc.data()?.otherHalfUid,
+            relationshipId: doc.data()?.relationshipId,
+            chatRoom: doc.data()?.chatRoom,
+            groceryList: doc.data()?.groceryList,
+            toDoList: doc.data()?.toDoList,
+            halfId: doc.data()?.halfId,
+          })
+        );
+      });
+    } catch (err) {
+      Alert.alert("UH OH", err.message);
     }
-    if (!userInfo.partnerAvatarSrc) {
-      dispatch(
-        updateUser({
-          partnerAvatarSrc: getPartnerInfo.data()?.avatarSrc,
-        })
-      );
-    }
-    if (!userInfo.partnerPhoneNumber) {
-      dispatch(
-        updateUser({
-          partnerPhoneNumber: getPartnerInfo.data()?.phoneNumber,
-        })
-      );
-    }
-    return;
   };
 
   useEffect(() => {
@@ -58,13 +45,10 @@ export const Dashboard = ({ navigation }: { navigation: any }) => {
     updatePartnerInfo();
 
     return () => {
-      console.log("dashboard unmounted");
+      updatePartnerInfo();
       isMounted = false;
     };
   }, []);
-
-  //TO DO
-  //SOMEHOW REFRESH (maybe button) when other user updates something
 
   return (
     <View style={globalStyles.noSafeArea}>

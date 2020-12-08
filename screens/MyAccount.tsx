@@ -132,7 +132,7 @@ export const MyAccount = ({ navigation }: { navigation: any }) => {
             <TouchableHighlight>
               <Text style={globalStyles.titleText}>My Account</Text>
             </TouchableHighlight>
-            <View />
+            <View style={{ width: 30 }} />
           </View>
           <View style={styles.body}>
             <TouchableOpacity
@@ -166,10 +166,16 @@ export const MyAccount = ({ navigation }: { navigation: any }) => {
               </View>
             </TouchableOpacity>
             <Text style={styles.normalText}>{userInfo.name}</Text>
-            <Text style={styles.normalText}>
-              {userInfo.phoneNumber
-                ? displayPhoneNum(userInfo.phoneNumber)
-                : "(555) 555-5555"}
+            <Text
+              style={
+                userInfo.phoneNumber
+                  ? styles.normalText
+                  : { ...styles.normalText, opacity: 0.2 }
+              }
+            >
+              {!userInfo.phoneNumber
+                ? "(555) 555-5555"
+                : displayPhoneNum(userInfo.phoneNumber)}
             </Text>
             <LinearGradient
               start={{ x: 0.0, y: 0.25 }}

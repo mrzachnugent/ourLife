@@ -47,3 +47,15 @@ export const updateUser = (obj: any) => ({
   type: "UPDATE_USER",
   payload: obj,
 });
+
+export const switchMsgNotification = () => ({
+  type: "SWITCH_MSG_NOTIFICATION",
+});
+
+export const switchGroceryNotification = () => ({
+  type: "SWITCH_GROCERY_NOTIFICATION",
+});
+
+export const switchTaskNotification = () => ({
+  type: "SWITCH_TASK_NOTIFICATION",
+});

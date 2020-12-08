@@ -23,6 +23,10 @@ export const ShareYourLink = ({ navigation }: { navigation: any }) => {
   const db = firebase.firestore();
   const halfIdRef = db.collection("halfId");
   const usersRef = db.collection("users");
+  const relationshipRef = db.collection("relationshipId");
+  const chatRoomsRef = db.collection("chatRooms");
+  const groceryListsRef = db.collection("groceryLists");
+  const toDoListsRef = db.collection("toDoLists");
 
   useEffect(() => {
     let isMounted = true;
@@ -82,6 +86,9 @@ export const ShareYourLink = ({ navigation }: { navigation: any }) => {
       await usersRef.doc(partnerUid).update({
         otherHalfUid: userInfo.uid,
         relationshipId: newRelationshipId,
+        chatRoom: `room_${newRelationshipId}`,
+        groceryList: `list_${newRelationshipId}`,
+        toDoList: `toDo_${newRelationshipId}`,
       });
       // update user halfId document
       await halfIdRef
@@ -91,12 +98,38 @@ export const ShareYourLink = ({ navigation }: { navigation: any }) => {
       await usersRef.doc(userInfo.uid).update({
         otherHalfUid: partnerUid,
         relationshipId: newRelationshipId,
+        chatRoom: `room_${newRelationshipId}`,
+        groceryList: `list_${newRelationshipId}`,
+        toDoList: `toDo_${newRelationshipId}`,
+      });
+      //create relationshipId document
+      await relationshipRef.doc(newRelationshipId).set({
+        uidFirst: userInfo.uid,
+        uidSecond: partnerUid,
+      });
+      //create chatroom
+      await chatRoomsRef.doc(`room_${newRelationshipId}`).set({
+        participants: [userInfo.uid, partnerUid],
+        messages: [],
+      });
+      // create groceryList
+      await groceryListsRef.doc(`list_${newRelationshipId}`).set({
+        participants: [userInfo.uid, partnerUid],
+        groceryList: [],
+      });
+      //create todoList
+      await toDoListsRef.doc(`toDo_${newRelationshipId}`).set({
+        participants: [userInfo.uid, partnerUid],
+        messages: [],
       });
       //update redux store
       dispatch(
         madeConnection({
           relationshipId: newRelationshipId,
           otherHalfUid: partnerUid,
+          chatRoom: `room_${newRelationshipId}`,
+          groceryList: `list_${newRelationshipId}`,
+          toDoList: `toDo_${newRelationshipId}`,
         })
       );
       dispatch(loaded());

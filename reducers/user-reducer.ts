@@ -2,6 +2,7 @@ const initialState = {
   firstTime: true,
   loadingState: false,
   isLoggedIn: false,
+
   user: {
     uid: "",
     name: "",
@@ -10,12 +11,15 @@ const initialState = {
     halfId: "",
     relationshipId: null, //mix of both ids ex: halfId1_halfId2
     otherHalfUid: "",
-    partnerNickname: null,
+    partnerName: null,
     partnerAvatarSrc: null,
     partnerPhoneNumber: null,
     notfiyMsg: true,
     notifyGroceries: false,
     notifyToDo: false,
+    chatRoom: null,
+    groceryList: null,
+    toDoList: null,
   },
 };
 
@@ -98,6 +102,30 @@ export const userReducer = (state = initialState, action: any) => {
         user: {
           ...state.user,
           ...action.payload,
+        },
+      };
+    case "SWITCH_MSG_NOTIFICATION":
+      return {
+        ...state,
+        user: {
+          ...state.user,
+          notfiyMsg: !state.user.notfiyMsg,
+        },
+      };
+    case "SWITCH_GROCERY_NOTIFICATION":
+      return {
+        ...state,
+        user: {
+          ...state.user,
+          notifyGroceries: !state.user.notifyGroceries,
+        },
+      };
+    case "SWITCH_TASK_NOTIFICATION":
+      return {
+        ...state,
+        user: {
+          ...state.user,
+          notifyToDo: !state.user.notifyToDo,
         },
       };
 

@@ -79,12 +79,12 @@ export const Signup = ({ navigation }: { navigation: any }) => {
             halfId: halfId,
             relationshipId: null,
             otherHalfUid: "",
-            partnerNickname: null,
-            partnerAvatarSrc: null,
-            partnerPhoneNumber: null,
             notfiyMsg: true,
             notifyGroceries: false,
             notifyToDo: false,
+            chatRoom: null,
+            groceryList: null,
+            toDoList: null,
           });
           db.collection("halfId").doc(halfId).set({
             uid: creds.user?.uid,
