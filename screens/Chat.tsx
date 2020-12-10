@@ -50,6 +50,7 @@ export const Chat = ({ navigation }: { navigation: any }) => {
   };
 
   useEffect(() => {
+    let isMounted = true;
     const unsubscribe = messagesRef.onSnapshot((querySnashot) => {
       const messagesFirestore = querySnashot
         .docChanges()
@@ -62,7 +63,9 @@ export const Chat = ({ navigation }: { navigation: any }) => {
       appendMessages(messagesFirestore);
     });
 
-    return () => unsubscribe();
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const renderBubble = (props: any) => {

@@ -59,3 +59,16 @@ export const switchGroceryNotification = () => ({
 export const switchTaskNotification = () => ({
   type: "SWITCH_TASK_NOTIFICATION",
 });
+
+export const switchModal = () => ({
+  type: "SWITCH_MODAL",
+});
+
+export const addNewGroceryItem = (obj: any) => ({
+  type: "ADD_NEW_GROCERY_ITEM",
+  payload: obj,
+});
+export const addNewToDoItem = (obj: any) => ({
+  type: "ADD_NEW_TODO_ITEM",
+  payload: obj,
+});

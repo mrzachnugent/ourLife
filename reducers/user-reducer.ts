@@ -2,7 +2,9 @@ const initialState = {
   firstTime: true,
   loadingState: false,
   isLoggedIn: false,
-
+  groceryModalVisible: false,
+  groceryArr: [],
+  toDoArr: [],
   user: {
     uid: "",
     name: "",
@@ -127,6 +129,22 @@ export const userReducer = (state = initialState, action: any) => {
           ...state.user,
           notifyToDo: !state.user.notifyToDo,
         },
+      };
+    case "SWITCH_MODAL":
+      return {
+        ...state,
+        groceryModalVisible: !state.groceryModalVisible,
+      };
+    case "ADD_NEW_GROCERY_ITEM":
+      return {
+        ...state,
+        groceryArr: [action.payload, ...state.groceryArr],
+      };
+
+    case "ADD_NEW_TODO_ITEM":
+      return {
+        ...state,
+        toDoArr: [action.payload, ...state.toDoArr],
       };
 
     default:

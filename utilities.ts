@@ -27,3 +27,21 @@ export const ValidateEmail = (email: string) => {
   }
   return false;
 };
+
+export const randomId = () => {
+  return Math.random().toString(36).substring(4);
+};
+
+export const moveToTheBack = (arr: [], item: {}) => {
+  let filtered: {}[] = [];
+  filtered = arr.filter((e) => e !== item);
+  filtered[filtered.length] = item;
+  return filtered;
+};
+
+export const moveToTheFront = (arr: [], item: {}) => {
+  let filtered: {}[] = [];
+  filtered = arr.filter((e) => e !== item);
+  filtered.unshift(item);
+  return filtered;
+};

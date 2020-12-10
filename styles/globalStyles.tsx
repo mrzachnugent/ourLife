@@ -20,7 +20,7 @@ export const globalStyles = StyleSheet.create({
   androidSafeArea: {
     flex: 1,
     backgroundColor: colors.black,
-    paddingTop: Platform.OS === "android" ? 35 : 0,
+    paddingTop: 35,
   },
 
   noSafeArea: {

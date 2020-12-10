@@ -20,7 +20,9 @@ export const Settings = ({ navigation }: { navigation: any }) => {
   useEffect(() => {
     let isMounted = true;
 
-    return () => (isMounted = false);
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   return (
