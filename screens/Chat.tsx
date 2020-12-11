@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -16,10 +16,13 @@ import { globalStyles, colors } from "../styles/globalStyles";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Bubble, GiftedChat } from "react-native-gifted-chat";
 import { DismissKeyboard } from "../Components/DismissKeyboard";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { updateLastChatArrLenth } from "../actions";
 
 export const Chat = ({ navigation }: { navigation: any }) => {
   const userInfo = useSelector((state: any) => state.user);
+  const dispatch = useDispatch();
+  const mountedRef = useRef(true);
 
   const [messages, setMessages] = useState([]);
   const db = firebase.firestore();
@@ -37,6 +40,7 @@ export const Chat = ({ navigation }: { navigation: any }) => {
 
   const appendMessages = useCallback(
     (messages) => {
+      if (!mountedRef.current) return null;
       setMessages((previousMessage) =>
         GiftedChat.append(previousMessage, messages)
       );
@@ -50,8 +54,8 @@ export const Chat = ({ navigation }: { navigation: any }) => {
   };
 
   useEffect(() => {
-    let isMounted = true;
     const unsubscribe = messagesRef.onSnapshot((querySnashot) => {
+      if (!mountedRef.current) return null;
       const messagesFirestore = querySnashot
         .docChanges()
         .filter(({ type }) => type === "added")
@@ -60,11 +64,13 @@ export const Chat = ({ navigation }: { navigation: any }) => {
           return { ...message, createdAt: message.createdAt.toDate() };
         })
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      if (!mountedRef.current) return null;
       appendMessages(messagesFirestore);
     });
 
     return () => {
-      isMounted = false;
+      mountedRef.current = false;
+      unsubscribe();
     };
   }, []);
 

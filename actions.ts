@@ -52,23 +52,36 @@ export const switchMsgNotification = () => ({
   type: "SWITCH_MSG_NOTIFICATION",
 });
 
-export const switchGroceryNotification = () => ({
+export const switchGroceryNotification = (bool: boolean) => ({
   type: "SWITCH_GROCERY_NOTIFICATION",
+  payload: bool,
 });
 
-export const switchTaskNotification = () => ({
+export const switchTaskNotification = (bool: boolean) => ({
   type: "SWITCH_TASK_NOTIFICATION",
+  payload: bool,
 });
 
 export const switchModal = () => ({
   type: "SWITCH_MODAL",
 });
+export const switchToDoModal = () => ({
+  type: "SWITCH_TODO_MODAL",
+});
 
-export const addNewGroceryItem = (obj: any) => ({
-  type: "ADD_NEW_GROCERY_ITEM",
+export const updateGroceryList = (obj: any) => ({
+  type: "UPDATE_GROCERY_LIST",
   payload: obj,
 });
-export const addNewToDoItem = (obj: any) => ({
-  type: "ADD_NEW_TODO_ITEM",
+export const updateToDoList = (obj: any) => ({
+  type: "UPDATE_TODO_LIST",
   payload: obj,
+});
+export const updateLastChatArrLenth = (num: any) => ({
+  type: "UPDATE_LAST_CHAT_ARR_LENGTH",
+  payload: num,
+});
+export const updateChatArrLenth = (num: any) => ({
+  type: "UPDATE_CHAT_ARR_LENGTH",
+  payload: num,
 });

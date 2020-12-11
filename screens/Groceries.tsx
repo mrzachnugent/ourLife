@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   View,
   Text,
@@ -7,85 +7,140 @@ import {
   Image,
   Alert,
 } from "react-native";
-import {
-  ScrollView,
-  TouchableHighlight,
-  TouchableOpacity,
-} from "react-native-gesture-handler";
+import { ScrollView, TouchableOpacity } from "react-native-gesture-handler";
+import firebase from "firebase";
+import "firebase/firestore";
 import { globalStyles, colors } from "../styles/globalStyles";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Feather } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { ModalAddGroceries } from "../Components/ModalAddGroceries";
-import { switchModal } from "../actions";
+import { loaded, loading, switchModal, updateGroceryList } from "../actions";
 import { useDispatch, useSelector } from "react-redux";
-
-const exampleList = [
-  {
-    _id: 1,
-    name: "popcorn",
-    quantity: 4,
-    notes: "extra butter!",
-    completed: true,
-  },
-  {
-    _id: 2,
-    name: "jelly",
-    quantity: 2,
-    notes: "extra butter!",
-    completed: false,
-  },
-  {
-    _id: 3,
-    name: "corn",
-    quantity: 1,
-    notes: "extra butter!",
-    completed: false,
-  },
-  {
-    _id: 4,
-    name: "chips",
-    quantity: 19,
-    notes: "extra butter!",
-    completed: false,
-  },
-  {
-    _id: 5,
-    name: "popcorn",
-    quantity: 1,
-    notes: "extra butter!",
-    completed: false,
-  },
-  {
-    _id: 6,
-    name: "jelly",
-    quantity: 99,
-    notes: "extra butter!",
-    completed: false,
-  },
-  {
-    _id: 7,
-    name: "corn",
-    quantity: 1,
-    notes: "extra butter!",
-    completed: false,
-  },
-  {
-    _id: 8,
-    name: "chips",
-    quantity: 1,
-    notes: "extra butter!",
-    completed: false,
-  },
-];
+import {
+  getIncompleteItems,
+  moveToTheBack,
+  moveToTheFront,
+  removeSingleItem,
+} from "../utilities";
+import { LoadingIndicator } from "../Components/LoadingIndicator";
 
 export const Groceries = ({ navigation }: { navigation: any }) => {
   const dispatch = useDispatch();
+  const userInfo = useSelector((state: any) => state.user);
+  const appInfo = useSelector((state: any) => state);
   const groArray: [] = useSelector((state: any) => state?.groceryArr);
+  const db = firebase.firestore();
+  const groceryListRef = db
+    .collection("groceryLists")
+    .doc(userInfo.groceryList);
+
+  const updateReduxGroceries = async () => {
+    try {
+      groceryListRef.onSnapshot((doc) => {
+        dispatch(updateGroceryList(doc.data()?.groceryList));
+      });
+    } catch (err) {
+      Alert.alert("UH OH", err.message);
+    }
+  };
+
+  const handleCompleted = async (item: any) => {
+    dispatch(loading());
+    try {
+      const getDocument = await groceryListRef.get();
+      const getGroceryList = await getDocument.data()?.groceryList;
+      if (!item.completed) {
+        const newOrder = await moveToTheBack(getGroceryList, item);
+        groceryListRef.set({
+          groceryList: [...newOrder],
+        });
+        dispatch(loaded());
+        return;
+      } else {
+        const uncheckNewOrder = await moveToTheFront(getGroceryList, item);
+        groceryListRef.set({
+          groceryList: [...uncheckNewOrder],
+        });
+        dispatch(loaded());
+        return;
+      }
+    } catch (err) {
+      Alert.alert("UH OH", err.message);
+      dispatch(loaded());
+    }
+  };
+
+  const handleDeleteAll = async () => {
+    dispatch(loading());
+    try {
+      groceryListRef.set({
+        groceryList: [],
+      });
+      dispatch(loaded());
+    } catch (err) {
+      Alert.alert("UH OH", err.message);
+      dispatch(loaded());
+    }
+  };
+
+  const handleDeleteSingleItem = async (item: any) => {
+    dispatch(loading());
+    try {
+      const getDocument = await groceryListRef.get();
+      const getGroceryList: [] = await getDocument.data()?.groceryList;
+
+      const newList: [] = await removeSingleItem(getGroceryList, item);
+      groceryListRef.set({
+        groceryList: [...newList],
+      });
+      dispatch(loaded());
+      return;
+    } catch (err) {
+      Alert.alert("UH OH", err.message);
+      dispatch(loaded());
+    }
+  };
+
+  const handleDeleteButton = () => {
+    Alert.alert(
+      "ARE YOU SURE?",
+      "This will permenantly delete the entire grocery list for you and your connection.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Yes I'm sure",
+          style: "destructive",
+          onPress: handleDeleteAll,
+        },
+      ]
+    );
+  };
+  const handleDeleteSingleItemButton = (item: any) => {
+    Alert.alert("DELETE ITEM?", `Do you want to delete ${item.name}?`, [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Yes",
+        style: "destructive",
+        onPress: () => handleDeleteSingleItem(item),
+      },
+    ]);
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+
+    updateReduxGroceries();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   return (
     <SafeAreaView style={globalStyles.androidSafeArea}>
       <View style={styles.container}>
+        {appInfo.loadingState && <LoadingIndicator />}
         <ModalAddGroceries />
         <TouchableOpacity onPress={() => navigation.navigate("Dashboard")}>
           <MaterialIcons name="arrow-back" size={30} color={colors.white} />
@@ -117,11 +172,13 @@ export const Groceries = ({ navigation }: { navigation: any }) => {
         </LinearGradient>
         <View style={{ flex: 1, alignItems: "center" }}>
           <View style={styles.infoCircle}>
-            <Text style={styles.infoNumber}>{groArray.length}</Text>
+            <Text style={styles.infoNumber}>
+              {Boolean(groArray) && getIncompleteItems(groArray).length}
+            </Text>
             <Text style={styles.infoItemText}>
-              {groArray.length === 0
+              {Boolean(groArray) && getIncompleteItems(groArray).length === 0
                 ? "items"
-                : groArray.length === 1
+                : Boolean(groArray) && getIncompleteItems(groArray).length === 1
                 ? "item"
                 : "items"}
             </Text>
@@ -132,9 +189,17 @@ export const Groceries = ({ navigation }: { navigation: any }) => {
           end={{ x: 1, y: 1 }}
           locations={[0, 0.9]}
           colors={["#282C31", "#22262B"]}
-          style={styles.button}
+          style={
+            Boolean(groArray) && Boolean(groArray.length)
+              ? styles.button
+              : { ...styles.button, opacity: 0.5 }
+          }
         >
-          <TouchableOpacity style={globalStyles.mainBtns}>
+          <TouchableOpacity
+            style={globalStyles.mainBtns}
+            onPress={handleDeleteButton}
+            disabled={Boolean(groArray) && !Boolean(groArray.length)}
+          >
             <MaterialIcons name="delete" size={40} color={colors.white} />
             <Text style={globalStyles.littleText}>ALL</Text>
           </TouchableOpacity>
@@ -142,7 +207,7 @@ export const Groceries = ({ navigation }: { navigation: any }) => {
       </View>
       <View style={styles.body}>
         <Text style={styles.titleText}>PICK UP</Text>
-        {groArray.length !== 0 && (
+        {Boolean(groArray) && groArray.length !== 0 && (
           <ScrollView style={styles.listView}>
             {groArray.map((item: any) => {
               return (
@@ -187,22 +252,7 @@ export const Groceries = ({ navigation }: { navigation: any }) => {
                     <TouchableOpacity
                       style={styles.itemTouchable}
                       onPress={() => console.log("TODO: Edit item")}
-                      onLongPress={() => {
-                        Alert.alert(
-                          "Delete Item?",
-                          `Do you want to delete ${item.name}?`,
-                          [
-                            {
-                              text: "Cancel",
-                              style: "cancel",
-                            },
-                            {
-                              text: "Yes",
-                              onPress: () => console.log("TODO"),
-                            },
-                          ]
-                        );
-                      }}
+                      onLongPress={() => handleDeleteSingleItemButton(item)}
                     >
                       <Text style={styles.itemText}>{item.name}</Text>
                     </TouchableOpacity>
@@ -218,7 +268,10 @@ export const Groceries = ({ navigation }: { navigation: any }) => {
                         : { ...styles.checkButton, borderColor: "#01A355" }
                     }
                   >
-                    <TouchableOpacity style={globalStyles.mainBtns}>
+                    <TouchableOpacity
+                      style={globalStyles.mainBtns}
+                      onPress={() => handleCompleted(item)}
+                    >
                       <Feather
                         name="check"
                         size={30}

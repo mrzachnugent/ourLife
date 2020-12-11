@@ -3,16 +3,19 @@ const initialState = {
   loadingState: false,
   isLoggedIn: false,
   groceryModalVisible: false,
+  toDoModalVisible: false,
   groceryArr: [],
   toDoArr: [],
+  lastChatArrLength: 0,
+  chatArrLength: 0,
   user: {
-    uid: "",
-    name: "",
+    uid: null,
+    name: null,
     phoneNumber: null,
     avatarSrc: null,
-    halfId: "",
+    halfId: null,
     relationshipId: null, //mix of both ids ex: halfId1_halfId2
-    otherHalfUid: "",
+    otherHalfUid: null,
     partnerName: null,
     partnerAvatarSrc: null,
     partnerPhoneNumber: null,
@@ -119,7 +122,7 @@ export const userReducer = (state = initialState, action: any) => {
         ...state,
         user: {
           ...state.user,
-          notifyGroceries: !state.user.notifyGroceries,
+          notifyGroceries: action.payload,
         },
       };
     case "SWITCH_TASK_NOTIFICATION":
@@ -127,7 +130,7 @@ export const userReducer = (state = initialState, action: any) => {
         ...state,
         user: {
           ...state.user,
-          notifyToDo: !state.user.notifyToDo,
+          notifyToDo: action.payload,
         },
       };
     case "SWITCH_MODAL":
@@ -135,16 +138,31 @@ export const userReducer = (state = initialState, action: any) => {
         ...state,
         groceryModalVisible: !state.groceryModalVisible,
       };
-    case "ADD_NEW_GROCERY_ITEM":
+    case "SWITCH_TODO_MODAL":
       return {
         ...state,
-        groceryArr: [action.payload, ...state.groceryArr],
+        toDoModalVisible: !state.toDoModalVisible,
+      };
+    case "UPDATE_GROCERY_LIST":
+      return {
+        ...state,
+        groceryArr: action.payload,
       };
 
-    case "ADD_NEW_TODO_ITEM":
+    case "UPDATE_TODO_LIST":
       return {
         ...state,
-        toDoArr: [action.payload, ...state.toDoArr],
+        toDoArr: action.payload,
+      };
+    case "UPDATE_LAST_CHAT_ARR_LENGTH":
+      return {
+        ...state,
+        lastChatArrLength: action.payload,
+      };
+    case "UPDATE_CHAT_ARR_LENGTH":
+      return {
+        ...state,
+        chatArrLength: action.payload,
       };
 
     default:

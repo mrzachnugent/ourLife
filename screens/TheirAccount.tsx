@@ -18,7 +18,8 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
 import { displayPhoneNum } from "../utilities";
 import { LinearGradient } from "expo-linear-gradient";
-import { updateUser } from "../actions";
+import { loaded, loading, updateUser } from "../actions";
+import { LoadingIndicator } from "../Components/LoadingIndicator";
 
 export const TheirAccount = ({ navigation }: { navigation: any }) => {
   const db = firebase.firestore();
@@ -29,6 +30,7 @@ export const TheirAccount = ({ navigation }: { navigation: any }) => {
   const groceryListsRef = db.collection("groceryLists");
   const toDoListsRef = db.collection("toDoLists");
   const userInfo = useSelector((state: any) => state.user);
+  const appInfo = useSelector((state: any) => state);
 
   useEffect(() => {
     let isMounted = true;
@@ -40,16 +42,8 @@ export const TheirAccount = ({ navigation }: { navigation: any }) => {
   const handleRemoveConnection = async () => {
     const halfId1 = Math.random().toString(36).substring(4);
     const halfId2 = Math.random().toString(36).substring(4);
-    try {
-      //delete relatoinshipId document
-      await relationshipIdRef.doc(userInfo.relationshipId).delete();
-      //delete chatroom document
-      await chatRoomsRef.doc(`room_${userInfo.relationshipId}`).delete();
-      //delete groceryList document
-      await groceryListsRef.doc(`list_${userInfo.relationshipId}`).delete();
-      //delete toDoList document
-      await toDoListsRef.doc(`toDo_${userInfo.relationshipId}`).delete();
 
+    try {
       //update partners user document
       await userRef.doc(userInfo.otherHalfUid).update({
         otherHalfUid: null,
@@ -64,6 +58,14 @@ export const TheirAccount = ({ navigation }: { navigation: any }) => {
         uid: userInfo.otherHalfUid,
         relationshipId: null,
       });
+      //delete relatoinshipId document
+      await relationshipIdRef.doc(userInfo.relationshipId).delete();
+      //delete chatroom document
+      await chatRoomsRef.doc(`room_${userInfo.relationshipId}`).delete();
+      //delete groceryList document
+      await groceryListsRef.doc(`list_${userInfo.relationshipId}`).delete();
+      //delete toDoList document
+      await toDoListsRef.doc(`toDo_${userInfo.relationshipId}`).delete();
       //update current user's document
       await userRef.doc(userInfo.uid).update({
         otherHalfUid: null,
@@ -78,13 +80,30 @@ export const TheirAccount = ({ navigation }: { navigation: any }) => {
         uid: userInfo.uid,
         relationshipId: null,
       });
+      dispatch(
+        updateUser({
+          otherHalfUid: null,
+          relationshipId: null,
+          chatRoom: null,
+          groceryList: null,
+          toDoList: null,
+          halfId: halfId2,
+        })
+      );
     } catch (err) {
       Alert.alert("UH OH", err.message);
+      dispatch(loaded());
     }
+  };
+
+  const handleRemoveBtn = async () => {
+    dispatch(loading());
+    Promise.all([handleRemoveConnection]).then(() => dispatch(loaded()));
   };
 
   return (
     <SafeAreaView style={globalStyles.androidSafeArea}>
+      {appInfo.loadingState && <LoadingIndicator />}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.navigate("Dashboard")}>
           <MaterialIcons name="arrow-back" size={30} color={colors.white} />

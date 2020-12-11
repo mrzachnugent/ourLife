@@ -6,18 +6,40 @@ import { MaterialIcons } from "@expo/vector-icons";
 import firebase from "firebase";
 import "firebase/firestore";
 
-import { updateUser } from "../actions";
+import {
+  switchModal,
+  updateChatArrLenth,
+  updateGroceryList,
+  updateToDoList,
+  updateUser,
+} from "../actions";
 
 import { colors, globalStyles } from "../styles/globalStyles";
 import { useDispatch, useSelector } from "react-redux";
+import { getIncompleteItems, getTaskPercentage } from "../utilities";
+import { ModalAddGroceries } from "../Components/ModalAddGroceries";
 
 export const Dashboard = ({ navigation }: { navigation: any }) => {
   const userInfo = useSelector((state: any) => state.user);
+  const appInfo = useSelector((state: any) => state);
+  const groArray: any = useSelector((state: any) => state?.groceryArr);
+  const toDoArray: any = useSelector((state: any) => state?.toDoArr);
   const db = firebase.firestore();
   const usersRef = db.collection("users");
   const dispatch = useDispatch();
+  const groceryListRef = db
+    .collection("groceryLists")
+    .doc(userInfo.groceryList);
+  const toDoListRef = db.collection("toDoLists").doc(userInfo.toDoList);
+  const messagesRef = db
+    .collection("chatRooms")
+    .doc(`room_${userInfo.relationshipId}`)
+    .collection("messages");
 
   const updatePartnerInfo = async () => {
+    if (!userInfo.otherHalfUid) {
+      return null;
+    }
     try {
       usersRef.doc(userInfo.otherHalfUid).onSnapshot((doc) => {
         dispatch(
@@ -25,7 +47,7 @@ export const Dashboard = ({ navigation }: { navigation: any }) => {
             partnerName: doc.data()?.name,
             partnerAvatarSrc: doc.data()?.avatarSrc,
             partnerPhoneNumber: doc.data()?.phoneNumber,
-            otherHalfUid: doc.data()?.otherHalfUid,
+            otherHalfUid: doc.data()?.uid,
             relationshipId: doc.data()?.relationshipId,
             chatRoom: doc.data()?.chatRoom,
             groceryList: doc.data()?.groceryList,
@@ -39,10 +61,40 @@ export const Dashboard = ({ navigation }: { navigation: any }) => {
     }
   };
 
+  const getGroceryListFromFirebase = async () => {
+    if (!userInfo.groceryList) {
+      return null;
+    }
+    try {
+      const getDocument = await groceryListRef.get();
+      const getGroceryList = await getDocument.data()?.groceryList;
+      dispatch(updateGroceryList(getGroceryList));
+    } catch (err) {
+      Alert.alert("UH OH", err.message);
+    }
+  };
+  const getToDoListFromFirebase = async () => {
+    if (!userInfo.toDoList) {
+      return null;
+    }
+    try {
+      const getDocument = await toDoListRef.get();
+      const getToDoList = await getDocument.data()?.messages;
+      dispatch(updateToDoList(getToDoList));
+    } catch (err) {
+      Alert.alert("UH OH", err.message);
+    }
+  };
+
   useEffect(() => {
     let isMounted = true;
+    if (!userInfo.relationshipId) {
+      navigation.navigate("ShareYourLink");
+    }
 
     updatePartnerInfo();
+    getGroceryListFromFirebase();
+    getToDoListFromFirebase();
 
     return () => {
       updatePartnerInfo();
@@ -52,6 +104,7 @@ export const Dashboard = ({ navigation }: { navigation: any }) => {
 
   return (
     <View style={globalStyles.noSafeArea}>
+      <ModalAddGroceries />
       <View style={styles.safeShapeContainer}>
         <View style={styles.header}>
           <TouchableOpacity
@@ -90,6 +143,7 @@ export const Dashboard = ({ navigation }: { navigation: any }) => {
             )}
           </TouchableOpacity>
         </View>
+
         <TouchableOpacity
           onPress={() => navigation.navigate("TheirAccount")}
           style={styles.shadow}
@@ -137,6 +191,11 @@ export const Dashboard = ({ navigation }: { navigation: any }) => {
               color={colors.white}
               style={styles.rightIcon}
             />
+            {appInfo.chatArrLength > appInfo.lastChatArrLength && (
+              <View style={styles.newMsg}>
+                <Text style={styles.newMsgText}>NEW</Text>
+              </View>
+            )}
           </TouchableOpacity>
         </LinearGradient>
         <LinearGradient
@@ -146,12 +205,26 @@ export const Dashboard = ({ navigation }: { navigation: any }) => {
           colors={["#14D1D1", "#01A355"]}
           style={globalStyles.btnContainer}
         >
+          {Boolean(groArray) &&
+            getIncompleteItems(groArray).length !== 0 &&
+            userInfo.notifyGroceries && (
+              <View style={styles.infoCircle}>
+                <Text style={styles.infoNumber}>
+                  {getIncompleteItems(groArray).length}
+                </Text>
+                <Text style={styles.infoItemText}>
+                  {getIncompleteItems(groArray).length === 0
+                    ? "items"
+                    : getIncompleteItems(groArray).length === 1
+                    ? "item"
+                    : "items"}
+                </Text>
+              </View>
+            )}
           <TouchableOpacity
             style={globalStyles.mainBtns}
             onPress={() => navigation.navigate("Groceries")}
-            onLongPress={() => {
-              console.log("TODO: Add grocery item");
-            }}
+            onLongPress={() => dispatch(switchModal())}
           >
             <Text style={globalStyles.titleText}>groceries</Text>
             <MaterialIcons
@@ -169,6 +242,13 @@ export const Dashboard = ({ navigation }: { navigation: any }) => {
           colors={["#1E89CC", "#9C14C4"]}
           style={globalStyles.btnContainer}
         >
+          {Boolean(toDoArray) && toDoArray.length !== 0 && userInfo.notifyToDo && (
+            <View style={{ ...styles.infoCircle, borderColor: "#9C14C4" }}>
+              <Text style={styles.infoNumber}>
+                {`${getTaskPercentage(toDoArray)}%`}
+              </Text>
+            </View>
+          )}
           <TouchableOpacity
             style={globalStyles.mainBtns}
             onPress={() => navigation.navigate("ToDo")}
@@ -257,5 +337,38 @@ const styles = StyleSheet.create({
     shadowRadius: 6.27,
 
     elevation: 10,
+  },
+  infoCircle: {
+    backgroundColor: "#0c0c0c",
+    position: "absolute",
+    left: 0,
+    top: -10,
+    height: 75,
+    width: 75,
+    borderRadius: 5000,
+    color: colors.white,
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 3,
+    borderColor: "#01A355",
+  },
+  infoNumber: {
+    color: colors.white,
+    fontSize: 18,
+    fontFamily: "montserrat-bold",
+  },
+  infoItemText: {
+    color: colors.white,
+    fontSize: 12,
+    fontFamily: "montserrat-bold",
+  },
+  newMsg: {
+    position: "absolute",
+    right: 22,
+    top: 10,
+  },
+  newMsgText: {
+    fontFamily: "montserrat-black",
+    color: "#cc0000",
   },
 });

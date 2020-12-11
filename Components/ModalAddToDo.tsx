@@ -15,27 +15,22 @@ import { TextInput } from "react-native-gesture-handler";
 import { useDispatch, useSelector } from "react-redux";
 import { colors, globalStyles } from "../styles/globalStyles";
 import { DismissKeyboard } from "./DismissKeyboard";
-import { loaded, loading, switchModal } from "../actions";
+import { loaded, loading, switchToDoModal } from "../actions";
 import { Picker } from "@react-native-community/picker";
 import { randomId } from "../utilities";
 import { LoadingIndicator } from "./LoadingIndicator";
 
-export const ModalAddGroceries = () => {
+export const ModalAddToDo = () => {
   const appInfo = useSelector((state: any) => state);
   const userInfo = useSelector((state: any) => state.user);
   const dispatch = useDispatch();
   const [isEnabled, setEnabled] = useState(false);
   const [itemName, setItemName] = useState("");
-  const [quantityAmount, setQuantityAmount] = useState("1");
+  const [assign, setAssign] = useState("no one");
   const [notes, setNotes] = useState("");
 
   const db = firebase.firestore();
-  const groceryListRef = db
-    .collection("groceryLists")
-    .doc(userInfo.groceryList);
-
-  // .get()
-  // .then((doc) => console.log(doc.data()?.groceryList));
+  const toDoListRef = db.collection("toDoLists").doc(userInfo.toDoList);
 
   useEffect(() => {
     let isMounted = true;
@@ -52,25 +47,25 @@ export const ModalAddGroceries = () => {
   const handleAddItem = async () => {
     dispatch(loading());
     try {
-      const getDocument = await groceryListRef.get();
-      const getGroceryList = await getDocument.data()?.groceryList;
+      const getDocument = await toDoListRef.get();
+      const getToDoList = await getDocument.data()?.messages;
       const newId = randomId();
-      groceryListRef.set({
-        groceryList: [
+      toDoListRef.set({
+        messages: [
           {
             _id: newId,
             name: itemName,
-            quantity: quantityAmount,
+            assigned: assign,
             notes: notes,
             completed: false,
           },
-          ...getGroceryList,
+          ...getToDoList,
         ],
       });
-      dispatch(switchModal());
+      dispatch(switchToDoModal());
       setItemName("");
       setNotes("");
-      setQuantityAmount("1");
+      setAssign("no one");
       dispatch(loaded());
     } catch (err) {
       Alert.alert("UH OH", err.message);
@@ -81,7 +76,7 @@ export const ModalAddGroceries = () => {
   return (
     <Modal
       animationType="fade"
-      visible={appInfo.groceryModalVisible}
+      visible={appInfo.toDoModalVisible}
       transparent={true}
       onRequestClose={() => console.log("please close me")}
     >
@@ -89,14 +84,17 @@ export const ModalAddGroceries = () => {
         <TouchableHighlight
           style={styles.modalBackground}
           onPress={() => {
-            dispatch(switchModal());
+            dispatch(switchToDoModal());
+            setItemName("");
+            setNotes("");
+            setAssign("no one");
           }}
         >
           <TouchableHighlight>
             <View style={styles.modalContainer}>
               {appInfo.loadingState && <LoadingIndicator />}
               <Text style={{ ...styles.mainText, paddingBottom: 40 }}>
-                ADD GROCERIES
+                ADD TO DO
               </Text>
               <View>
                 <LinearGradient
@@ -114,33 +112,37 @@ export const ModalAddGroceries = () => {
                   />
                 </LinearGradient>
                 <View style={styles.quantityContainer}>
-                  <Text style={styles.mainText}>Quantity</Text>
+                  <Text style={styles.mainText}>Assign</Text>
                   <LinearGradient
                     start={{ x: 0.0, y: 0.25 }}
                     end={{ x: 1, y: 1.0 }}
                     locations={[0, 1]}
                     colors={["#2C333A", "#2C333A"]}
-                    style={{ ...globalStyles.inputContainer, width: 100 }}
+                    style={{ ...globalStyles.inputContainer, width: 180 }}
                   >
                     <View>
                       <Picker
-                        selectedValue={quantityAmount}
+                        selectedValue={assign}
                         style={styles.pickerContainer}
-                        mode="dropdown"
+                        mode="dialog"
                         onValueChange={(itemValue, itemIndex) =>
-                          setQuantityAmount(`${itemValue}`)
+                          setAssign(`${itemValue}`)
                         }
                       >
-                        <Picker.Item label="1" value="1" />
-                        <Picker.Item label="2" value="2" />
-                        <Picker.Item label="3" value="3" />
-                        <Picker.Item label="4" value="4" />
-                        <Picker.Item label="5" value="5" />
-                        <Picker.Item label="6" value="6" />
-                        <Picker.Item label="7" value="7" />
-                        <Picker.Item label="8" value="8" />
-                        <Picker.Item label="9" value="9" />
-                        <Picker.Item label="9+" value="9+" />
+                        <Picker.Item label="no one" value="no one" />
+                        <Picker.Item
+                          label={userInfo.partnerName}
+                          value={
+                            Boolean(userInfo.partnerAvatarSrc)
+                              ? userInfo.partnerAvatarSrc
+                              : userInfo.otherHalfUid
+                          }
+                        />
+
+                        <Picker.Item
+                          label={userInfo.name}
+                          value={userInfo.avatarSrc}
+                        />
                       </Picker>
                     </View>
                   </LinearGradient>
@@ -190,7 +192,7 @@ export const ModalAddGroceries = () => {
                           paddingBottom: 0,
                         }}
                       >
-                        ADD ITEM
+                        ADD TASK
                       </Text>
                     </TouchableOpacity>
                   </LinearGradient>

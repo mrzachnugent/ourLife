@@ -22,13 +22,20 @@ import { ShareYourLink } from "./screens/ShareYourLink";
 import { Signup } from "./screens/Signup";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useDispatch, useSelector } from "react-redux";
-import { firstTimer, loggedIn, loggedOut, userStateUpdate } from "./actions";
+import {
+  firstTimer,
+  loggedIn,
+  loggedOut,
+  updateUser,
+  userStateUpdate,
+} from "./actions";
 
 //create react-navigation
 const Stack = createStackNavigator();
 
 //Removes yellowbox warning for android
 LogBox.ignoreLogs(["Setting a timer for a long period of time"]);
+LogBox.ignoreLogs(["Can't perform a React state"]);
 
 export default function AppContainer() {
   const dispatch = useDispatch();
@@ -53,9 +60,35 @@ export default function AppContainer() {
   //get user data from firestore
   const usersRef = db.collection("users");
 
+  const updateUserInfo = async () => {
+    if (!userInfo.uid) {
+      return null;
+    }
+    try {
+      usersRef.doc(userInfo.uid).onSnapshot((doc) => {
+        if (!userInfo.otherHalfUid) {
+          return null;
+        }
+        dispatch(
+          updateUser({
+            otherHalfUid: doc.data()?.otherHalfUid,
+            relationshipId: doc.data()?.relationshipId,
+            chatRoom: doc.data()?.chatRoom,
+            groceryList: doc.data()?.groceryList,
+            toDoList: doc.data()?.toDoList,
+            halfId: doc.data()?.halfId,
+          })
+        );
+      });
+    } catch (err) {
+      Alert.alert("UH OH", err.message);
+    }
+  };
+
   useEffect(() => {
     let isMounted = true;
     firstTime();
+    updateUserInfo();
 
     firebase.auth().onAuthStateChanged(async (user) => {
       if (user) {
