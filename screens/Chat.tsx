@@ -1,30 +1,25 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import {
-  View,
-  Text,
-  SafeAreaView,
-  Image,
-  StyleSheet,
-  Alert,
-  Linking,
-} from "react-native";
-import { TouchableOpacity } from "react-native-gesture-handler";
+import { Image, Alert, Linking } from "react-native";
+import { useSelector } from "react-redux";
+
+import { DashboardNavProps } from "../types/navigationTypes";
+import { InitialState } from "../types/reducerTypes";
+
 import firebase from "firebase";
 import "firebase/firestore";
 
-import { globalStyles, colors } from "../styles/globalStyles";
-import { MaterialIcons } from "@expo/vector-icons";
-import { Bubble, GiftedChat } from "react-native-gifted-chat";
+import { GiftedChat, IMessage, User } from "react-native-gifted-chat";
+
+import { randomId } from "../utilities";
 import { DismissKeyboard } from "../Components/DismissKeyboard";
-import { useDispatch, useSelector } from "react-redux";
-import { updateLastChatArrLenth } from "../actions";
+import { GenericHeader } from "../Components/GenericHeader";
+import { RenderBubble } from "../Components/ReanderBubble";
 
-export const Chat = ({ navigation }: { navigation: any }) => {
-  const userInfo = useSelector((state: any) => state.user);
-  const dispatch = useDispatch();
-  const mountedRef = useRef(true);
+export const Chat = ({ navigation }: DashboardNavProps) => {
+  const userInfo = useSelector((state: InitialState) => state.user);
+  const mountedRef = useRef<boolean>(true);
 
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState<IMessage[]>([]);
   const db = firebase.firestore();
 
   const messagesRef = db
@@ -32,14 +27,14 @@ export const Chat = ({ navigation }: { navigation: any }) => {
     .doc(`room_${userInfo.relationshipId}`)
     .collection("messages");
 
-  const user = {
-    _id: userInfo.uid,
-    name: userInfo.name,
-    avatar: userInfo.avatarSrc,
+  const user: User = {
+    _id: userInfo.uid ? userInfo.uid : randomId(),
+    name: userInfo.name ? userInfo.name : undefined,
+    avatar: userInfo.avatarSrc ? userInfo.avatarSrc : undefined,
   };
 
   const appendMessages = useCallback(
-    (messages) => {
+    (messages: IMessage[]) => {
       if (!mountedRef.current) return null;
       setMessages((previousMessage) =>
         GiftedChat.append(previousMessage, messages)
@@ -48,7 +43,7 @@ export const Chat = ({ navigation }: { navigation: any }) => {
     [messages]
   );
 
-  const handleSend = async (messages: []) => {
+  const handleSend = async (messages: IMessage[]) => {
     const write = messages.map((m) => messagesRef.add(m));
     await Promise.all(write);
   };
@@ -61,7 +56,12 @@ export const Chat = ({ navigation }: { navigation: any }) => {
         .filter(({ type }) => type === "added")
         .map(({ doc }) => {
           const message = doc.data();
-          return { ...message, createdAt: message.createdAt.toDate() };
+          return {
+            _id: message._id,
+            text: message.text,
+            user: message.user,
+            createdAt: message.createdAt.toDate(),
+          };
         })
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
       if (!mountedRef.current) return null;
@@ -73,30 +73,6 @@ export const Chat = ({ navigation }: { navigation: any }) => {
       unsubscribe();
     };
   }, []);
-
-  const renderBubble = (props: any) => {
-    return (
-      <Bubble
-        {...props}
-        wrapperStyle={{
-          right: {
-            backgroundColor: "#019EF4",
-          },
-          left: {
-            backgroundColor: "#9C14C4",
-          },
-        }}
-        textStyle={{
-          right: {
-            color: "#fff",
-          },
-          left: {
-            color: "#fff",
-          },
-        }}
-      />
-    );
-  };
 
   const handleMakeCall = () => {
     if (!userInfo.partnerPhoneNumber) {
@@ -112,60 +88,24 @@ export const Chat = ({ navigation }: { navigation: any }) => {
 
   return (
     <DismissKeyboard>
-      <SafeAreaView style={globalStyles.androidSafeArea}>
-        <View style={styles.container}>
-          <TouchableOpacity onPress={() => navigation.navigate("Dashboard")}>
-            <MaterialIcons name="arrow-back" size={30} color={colors.white} />
-          </TouchableOpacity>
-          <View style={styles.heading}>
-            <Text style={globalStyles.pageTitleText}>CHAT</Text>
-            <Image
-              source={require("../assets/unicorn.png")}
-              style={{ width: 30, height: 60 }}
-            />
-          </View>
-          <TouchableOpacity onPress={handleMakeCall}>
-            <MaterialIcons name="phone" size={30} color={colors.white} />
-          </TouchableOpacity>
-        </View>
-
-        <GiftedChat
-          messages={messages}
-          user={user}
-          renderBubble={renderBubble}
-          renderUsernameOnMessage={true}
-          onSend={handleSend}
+      <GenericHeader
+        goBack={() => navigation.navigate("Dashboard")}
+        makeCall={handleMakeCall}
+        heading="CHAT"
+        iconName="phone"
+      >
+        <Image
+          source={require("../assets/unicorn.png")}
+          style={{ width: 30, height: 60 }}
         />
-      </SafeAreaView>
+      </GenericHeader>
+      <GiftedChat
+        messages={messages}
+        user={user}
+        renderBubble={RenderBubble}
+        renderUsernameOnMessage={true}
+        onSend={handleSend}
+      />
     </DismissKeyboard>
   );
 };
-
-//For custom GiftedChat styling:
-//https://www.gitmemory.com/issue/FaridSafi/react-native-gifted-chat/1739/629664911
-
-const styles = StyleSheet.create({
-  //header
-  container: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 20,
-    width: "100%",
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray,
-  },
-  title: {
-    color: colors.white,
-  },
-
-  heading: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    width: 120,
-  },
-  inputBackground: {
-    backgroundColor: colors.black,
-  },
-});

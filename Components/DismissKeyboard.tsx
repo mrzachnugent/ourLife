@@ -1,8 +1,12 @@
 import React from "react";
-import { Keyboard, TouchableWithoutFeedback } from "react-native";
+import { Keyboard, SafeAreaView, TouchableWithoutFeedback } from "react-native";
 
-export const DismissKeyboard = ({ children }: any) => (
+import { OnlyChildren } from "../types/screenTypes";
+
+import { globalStyles } from "../styles/globalStyles";
+
+export const DismissKeyboard = ({ children }: OnlyChildren) => (
   <TouchableWithoutFeedback onPress={() => Keyboard.dismiss()}>
-    {children}
+    <SafeAreaView style={globalStyles.androidSafeArea}>{children}</SafeAreaView>
   </TouchableWithoutFeedback>
 );

@@ -1,29 +1,32 @@
-// @refresh r e s e t (remove spaces to work)
-// comment above : prevents preservation of React local state in function components and hooks
-import React, { useEffect, useState } from "react";
+import React, { FC, useState } from "react";
 import { LogBox } from "react-native";
+import { Provider } from "react-redux";
+import { createStore } from "redux";
+
+import { userReducer } from "./reducers/user-reducer";
+
 import { AppLoading } from "expo";
+
 import * as firebase from "firebase";
 import apiKeys from "./config/keys";
 
-import configureStore from "./store";
 import { getFonts } from "./Components/getFonts";
 import AppContainer from "./AppContainer";
-import { Provider } from "react-redux";
 
 //initialize firebase
 if (!firebase.apps.length) {
   firebase.initializeApp(apiKeys.firebaseConfig);
 }
 
-//configure redux store
-const store = configureStore();
-
-//Removes yellowbox warning for android
+//Removes yellowbox warning for android & potential memory leak
 LogBox.ignoreLogs(["Setting a timer for a long period of time"]);
+// LogBox.ignoreLogs(["Can't perform a React state"]);
 
-export default function App() {
-  const [fontsLoaded, setFontsLoaded] = useState(false);
+//configure redux store
+const store = createStore(userReducer);
+
+const App: FC = () => {
+  const [fontsLoaded, setFontsLoaded] = useState<boolean>(false);
 
   if (fontsLoaded) {
     return (
@@ -40,4 +43,6 @@ export default function App() {
       />
     );
   }
-}
+};
+
+export default App;

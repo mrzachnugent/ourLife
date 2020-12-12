@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -26,6 +26,7 @@ import {
 import { LoadingIndicator } from "../Components/LoadingIndicator";
 
 export const Groceries = ({ navigation }: { navigation: any }) => {
+  const isMounted = useRef<boolean>(true);
   const dispatch = useDispatch();
   const userInfo = useSelector((state: any) => state.user);
   const appInfo = useSelector((state: any) => state);
@@ -36,8 +37,10 @@ export const Groceries = ({ navigation }: { navigation: any }) => {
     .doc(userInfo.groceryList);
 
   const updateReduxGroceries = async () => {
+    if (!isMounted.current) return null;
     try {
       groceryListRef.onSnapshot((doc) => {
+        if (!isMounted.current) return null;
         dispatch(updateGroceryList(doc.data()?.groceryList));
       });
     } catch (err) {
@@ -128,12 +131,10 @@ export const Groceries = ({ navigation }: { navigation: any }) => {
   };
 
   useEffect(() => {
-    let isMounted = true;
-
     updateReduxGroceries();
 
     return () => {
-      isMounted = false;
+      isMounted.current = false;
     };
   }, []);
 

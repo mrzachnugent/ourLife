@@ -1,32 +1,31 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   View,
   Text,
-  SafeAreaView,
   StyleSheet,
   Image,
+  TouchableOpacity,
   Alert,
 } from "react-native";
-import {
-  TouchableHighlight,
-  TouchableOpacity,
-} from "react-native-gesture-handler";
-import { globalStyles, colors } from "../styles/globalStyles";
-import { MaterialIcons } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
 import {
   loaded,
   loading,
   switchGroceryNotification,
-  switchMsgNotification,
   switchTaskNotification,
-  switchToDoModal,
 } from "../actions";
+
 import firebase from "firebase";
 import "firebase/firestore";
+
+import { globalStyles } from "../styles/globalStyles";
+
 import { LoadingIndicator } from "../Components/LoadingIndicator";
+import { DismissKeyboard } from "../Components/DismissKeyboard";
+import { GenericHeader } from "../Components/GenericHeader";
 
 export const Settings = ({ navigation }: { navigation: any }) => {
+  const isMounted = useRef<boolean>(true);
   const userInfo = useSelector((state: any) => state.user);
   const appInfo = useSelector((state: any) => state);
   const dispatch = useDispatch();
@@ -34,6 +33,7 @@ export const Settings = ({ navigation }: { navigation: any }) => {
   const usersRef = db.collection("users");
 
   const handleSwitchGroceries = async () => {
+    if (!isMounted.current || !userInfo.uid) return null;
     dispatch(loading());
     try {
       await usersRef
@@ -46,6 +46,7 @@ export const Settings = ({ navigation }: { navigation: any }) => {
     }
   };
   const handleSwitchToDo = async () => {
+    if (!isMounted.current || !userInfo.uid) return null;
     dispatch(loading());
     try {
       await usersRef
@@ -59,32 +60,23 @@ export const Settings = ({ navigation }: { navigation: any }) => {
   };
 
   useEffect(() => {
-    let isMounted = true;
-
     return () => {
-      isMounted = false;
+      isMounted.current = false;
     };
   }, []);
 
   return (
-    <SafeAreaView style={globalStyles.androidSafeArea}>
+    <DismissKeyboard>
       {appInfo.loadingState && <LoadingIndicator />}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.navigate("Dashboard")}>
-          <MaterialIcons name="arrow-back" size={30} color={colors.white} />
-        </TouchableOpacity>
-        <TouchableHighlight>
-          <Text style={globalStyles.titleText}>Settings</Text>
-        </TouchableHighlight>
-        <View style={{ width: 30 }} />
-      </View>
+      <GenericHeader
+        goBack={() => navigation.navigate("Dashboard")}
+        heading="Settings"
+        iconName="none"
+      />
+
       <View style={styles.body}>
-        <View>
-          <Text
-            style={{
-              ...globalStyles.littleText,
-            }}
-          >
+        <View style={{ flex: 0.15 }}>
+          <Text style={globalStyles.littleText}>
             Additional info will only be shown on the dashboard if the list is
             not empty.
           </Text>
@@ -99,15 +91,7 @@ export const Settings = ({ navigation }: { navigation: any }) => {
                   : require("../assets/btn-off.png")
               }
             />
-            <Text
-              style={{
-                ...globalStyles.littleText,
-                textAlign: "left",
-                width: 250,
-              }}
-            >
-              show grocries additional info
-            </Text>
+            <Text style={styles.text}>Show groceries additional info</Text>
           </View>
         </TouchableOpacity>
         <TouchableOpacity onPress={handleSwitchToDo}>
@@ -119,19 +103,11 @@ export const Settings = ({ navigation }: { navigation: any }) => {
                   : require("../assets/btn-off.png")
               }
             />
-            <Text
-              style={{
-                ...globalStyles.littleText,
-                textAlign: "left",
-                width: 260,
-              }}
-            >
-              show todo additional info
-            </Text>
+            <Text style={styles.text}>Show todo additional info</Text>
           </View>
         </TouchableOpacity>
       </View>
-    </SafeAreaView>
+    </DismissKeyboard>
   );
 };
 
@@ -151,5 +127,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-evenly",
     flex: 1,
     paddingHorizontal: 20,
+  },
+
+  text: {
+    ...globalStyles.littleText,
+    textAlign: "left",
+    width: 250,
   },
 });

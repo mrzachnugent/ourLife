@@ -1,4 +1,6 @@
-const initialState = {
+import { Actions, InitialState } from "../types/reducerTypes";
+
+const initialState: InitialState = {
   firstTime: true,
   loadingState: false,
   isLoggedIn: false,
@@ -6,8 +8,6 @@ const initialState = {
   toDoModalVisible: false,
   groceryArr: [],
   toDoArr: [],
-  lastChatArrLength: 0,
-  chatArrLength: 0,
   user: {
     uid: null,
     name: null,
@@ -20,8 +20,8 @@ const initialState = {
     partnerAvatarSrc: null,
     partnerPhoneNumber: null,
     notfiyMsg: true,
-    notifyGroceries: false,
-    notifyToDo: false,
+    notifyGroceries: true,
+    notifyToDo: true,
     chatRoom: null,
     groceryList: null,
     toDoList: null,

@@ -16,13 +16,14 @@ import { DismissKeyboard } from "../Components/DismissKeyboard";
 import { LoadingIndicator } from "../Components/LoadingIndicator";
 import { useDispatch, useSelector } from "react-redux";
 import { loaded, loading, loggedIn } from "../actions";
-import { diffClamp } from "react-native-reanimated";
 import { ValidateEmail } from "../utilities";
+import { InitialState } from "../types/reducerTypes";
+import { Navigation } from "../types/navigationTypes";
 
 export const Signup = ({ navigation }: { navigation: any }) => {
   const dispatch = useDispatch();
-  const appInfo = useSelector((state: any) => state);
-  const userInfo = useSelector((state: any) => state.user);
+  const appInfo = useSelector((state: InitialState) => state);
+  const userInfo = useSelector((state: InitialState) => state.user);
 
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState("");
