@@ -1,38 +1,34 @@
-import React, { useEffect, useState } from "react";
-import {
-  View,
-  Text,
-  SafeAreaView,
-  StyleSheet,
-  Image,
-  ScrollView,
-  Alert,
-} from "react-native";
-
-import {
-  TextInput,
-  TouchableHighlight,
-  TouchableOpacity,
-} from "react-native-gesture-handler";
-import * as ImagePicker from "expo-image-picker";
-import firebase from "firebase";
-import "firebase/firestore";
-import { globalStyles, colors } from "../styles/globalStyles";
-import { MaterialIcons } from "@expo/vector-icons";
+import React, { useEffect, useRef, useState } from "react";
+import { View, Text, StyleSheet, Alert, TouchableOpacity } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
-import { LinearGradient } from "expo-linear-gradient";
-import { DismissKeyboard } from "../Components/DismissKeyboard";
 import {
   avatarSrcUpdate,
   loaded,
   loading,
-  loggedOut,
   userNameUpdate,
   userPhoneUpdate,
 } from "../actions";
-import { displayPhoneNum } from "../utilities";
-import { LoadingIndicator } from "../Components/LoadingIndicator";
+
+import { DashboardNavProps } from "../types/navigationTypes";
+import { InitialState } from "../types/reducerTypes";
+import firebase from "firebase";
+import "firebase/firestore";
 import apiKeys from "../config/keys";
+
+import * as ImagePicker from "expo-image-picker";
+
+import { LoadingIndicator } from "../Components/LoadingIndicator";
+import { GenericHeader } from "../Components/GenericHeader";
+import { ChangeAvatar } from "../Components/ChangeAvatar";
+import { DisplayPhoneNumText } from "../Components/DislpayPhoneNumText";
+import { ScrollableSpacer } from "../Components/ScrollableSpacer";
+import { ThinButton } from "../Components/ThinButton";
+import { GenericInput } from "../Components/GenericInput";
+import { AvoidKeyboard } from "../Components/AvoidKeyboard";
+import { ScrollableContainer } from "../Components/ScrollableContainer";
+import { LogoutButton } from "../Components/LogoutButton";
+
+import { colors } from "../styles/globalStyles";
 
 if (!firebase.apps.length) {
   firebase.initializeApp(apiKeys.firebaseConfig);
@@ -41,10 +37,11 @@ if (!firebase.apps.length) {
 const storageRef = firebase.storage().ref();
 const db = firebase.firestore();
 
-export const MyAccount = ({ navigation }: { navigation: any }) => {
+export const MyAccount = ({ navigation }: DashboardNavProps) => {
+  const isMounted = useRef<boolean>(true);
   const dispatch = useDispatch();
-  const appInfo = useSelector((state: any) => state);
-  const userInfo = useSelector((state: any) => state.user);
+  const appInfo = useSelector((state: InitialState) => state);
+  const userInfo = useSelector((state: InitialState) => state.user);
   const [enableNameSave, setNameEnableSave] = useState(false);
   const [name, setName] = useState("");
   const [enablePhoneSave, setPhoneEnableSave] = useState(false);
@@ -53,7 +50,6 @@ export const MyAccount = ({ navigation }: { navigation: any }) => {
   const usersRef = db.collection("users");
 
   useEffect(() => {
-    let isMounted = true;
     if (name.length) {
       setNameEnableSave(true);
     } else {
@@ -61,34 +57,38 @@ export const MyAccount = ({ navigation }: { navigation: any }) => {
     }
 
     return () => {
-      isMounted = false;
+      isMounted.current = false;
     };
   }, [name]);
 
   useEffect(() => {
-    let isMounted = true;
     if (phone.length > 6) {
       setPhoneEnableSave(true);
     } else {
       setPhoneEnableSave(false);
     }
     return () => {
-      isMounted = false;
+      isMounted.current = false;
     };
   }, [phone]);
 
   const handlePress = async () => {
+    if (!userInfo.uid) return null;
+    //request camera roll access
     const { status } = await ImagePicker.requestCameraRollPermissionsAsync();
     if (status !== "granted") {
       alert("Sorry, we need camera roll permissions to make this work!");
       return;
     }
+    //allow user to choose image and crop it to an aspect of 4 by 4
     const chosenPic = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       quality: 1,
       aspect: [4, 4],
     });
+    //if the user does not cancel, it will upload the selected pic to firebase store
+    //and update the redux store's avatarSrc
     if (!chosenPic.cancelled) {
       dispatch(loading());
       const imageName = Math.random().toString(36).substring(7);
@@ -109,175 +109,84 @@ export const MyAccount = ({ navigation }: { navigation: any }) => {
     }
   };
 
+  //on name save, it will update firebase and the redux store
   const onNameSave = async () => {
+    if (!userInfo.uid) return null;
     await usersRef.doc(userInfo.uid).update({ name: name });
     dispatch(userNameUpdate(name));
   };
+
+  //on phone number save, it will update firebase and the redux store
   const onPhoneSave = async () => {
+    if (!userInfo.uid) return null;
     await usersRef.doc(userInfo.uid).update({ phoneNumber: phone });
     dispatch(userPhoneUpdate(phone));
   };
 
   return (
-    <ScrollView style={styles.scroll}>
-      <DismissKeyboard>
-        <SafeAreaView
-          style={{ ...globalStyles.androidSafeArea, paddingTop: 20 }}
-        >
-          {appInfo.loadingState && <LoadingIndicator />}
-          <View style={styles.header}>
-            <TouchableOpacity onPress={() => navigation.navigate("Dashboard")}>
-              <MaterialIcons name="arrow-back" size={30} color={colors.white} />
-            </TouchableOpacity>
-            <TouchableHighlight>
-              <Text style={globalStyles.titleText}>My Account</Text>
-            </TouchableHighlight>
-            <View style={{ width: 30 }} />
-          </View>
-          <View style={styles.body}>
-            <TouchableOpacity
-              onPress={handlePress}
-              style={{ ...styles.shadow, marginBottom: -15 }}
-            >
-              <View style={styles.centerAvatar}>
-                {userInfo.avatarSrc ? (
-                  <Image
-                    // source={require("../assets/mel-avatar.jpg")}
-                    source={{ uri: userInfo.avatarSrc }}
-                    style={{
-                      width: "99.8%",
-                      height: "99.8%",
-                      opacity: 1,
-                      borderRadius: 500,
-                    }}
-                  />
-                ) : (
-                  <MaterialIcons
-                    name="person"
-                    size={150}
-                    color={colors.white}
-                  />
-                )}
+    <AvoidKeyboard>
+      {appInfo.loadingState && <LoadingIndicator />}
+      <GenericHeader
+        goBack={() => navigation.navigate("Dashboard")}
+        heading="My Account"
+        iconName="none"
+      />
 
-                <View style={styles.overlay}>
-                  <Text style={styles.normalText}>Change avatar</Text>
-                  <MaterialIcons name="image" size={50} color={colors.white} />
-                </View>
-              </View>
-            </TouchableOpacity>
-            <Text style={styles.normalText}>{userInfo.name}</Text>
-            <Text
-              style={
-                userInfo.phoneNumber
-                  ? styles.normalText
-                  : { ...styles.normalText, opacity: 0.2 }
-              }
-            >
-              {!userInfo.phoneNumber
-                ? "(555) 555-5555"
-                : displayPhoneNum(userInfo.phoneNumber)}
-            </Text>
-            <LinearGradient
-              start={{ x: 0.0, y: 0.25 }}
-              end={{ x: 1, y: 1.0 }}
-              locations={[0, 1]}
-              colors={["#2C333A", "#2C333A"]}
-              style={{
-                ...globalStyles.inputContainer,
-                marginTop: 40,
-                marginBottom: 20,
-              }}
-            >
-              <TextInput
-                placeholder="Change your name"
-                placeholderTextColor="#FFFFFF75"
-                style={globalStyles.input}
-                onChangeText={(text) => setName(text)}
-              />
-            </LinearGradient>
-            <LinearGradient
-              start={{ x: 0.0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              locations={[0, 0.9]}
-              colors={["#282C31", "#22262B"]}
-              style={{ ...globalStyles.btnContainer, width: 300 }}
-            >
-              <TouchableOpacity
-                style={globalStyles.mainBtns}
-                disabled={!enableNameSave}
-                onPress={onNameSave}
-              >
-                <Text
-                  style={
-                    enableNameSave
-                      ? globalStyles.titleText
-                      : { ...globalStyles.titleText, opacity: 0.3 }
-                  }
-                >
-                  save name change
-                </Text>
-              </TouchableOpacity>
-            </LinearGradient>
-            <LinearGradient
-              start={{ x: 0.0, y: 0.25 }}
-              end={{ x: 1, y: 1.0 }}
-              locations={[0, 1]}
-              colors={["#2C333A", "#2C333A"]}
-              style={{
-                ...globalStyles.inputContainer,
-                marginTop: 40,
-                marginBottom: 20,
-              }}
-            >
-              <TextInput
-                keyboardType="number-pad"
-                placeholder="Update Phone Number"
-                placeholderTextColor="#FFFFFF75"
-                style={globalStyles.input}
-                onChangeText={(text) => setPhone(text)}
-              />
-            </LinearGradient>
-            <LinearGradient
-              start={{ x: 0.0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              locations={[0, 0.9]}
-              colors={["#282C31", "#22262B"]}
-              style={{ ...globalStyles.btnContainer, width: 300 }}
-            >
-              <TouchableOpacity
-                style={globalStyles.mainBtns}
-                disabled={!enablePhoneSave}
-                onPress={onPhoneSave}
-              >
-                <Text
-                  style={
-                    enablePhoneSave
-                      ? globalStyles.titleText
-                      : { ...globalStyles.titleText, opacity: 0.3 }
-                  }
-                >
-                  save phone number
-                </Text>
-              </TouchableOpacity>
-            </LinearGradient>
-            <TouchableHighlight
-              style={{ marginVertical: 30 }}
-              onPress={() =>
-                firebase
-                  .auth()
-                  .signOut()
-                  .then(() => {
-                    dispatch(loggedOut());
-                  })
-                  .then(() => navigation.navigate("Login"))
-              }
-            >
-              <Text style={styles.normalText}>log out</Text>
-            </TouchableHighlight>
+      <View style={styles.body}>
+        <ScrollableContainer>
+          <TouchableOpacity
+            onPress={handlePress}
+            style={{ ...styles.shadow, marginBottom: -15 }}
+          >
+            <ChangeAvatar />
+          </TouchableOpacity>
+          <Text style={{ ...styles.normalText, paddingVertical: 15 }}>
+            {userInfo.name}
+          </Text>
+
+          <View style={{ flex: 1, alignItems: "center" }}>
+            {/* <ScrollableSpacer height={40} /> */}
+
+            <GenericInput
+              placeholder="Change your name"
+              onChange={(text) => setName(text)}
+            />
+
+            <ScrollableSpacer height={20} />
+
+            <ThinButton
+              colorOne="#282C31"
+              colorTwo="#22262B"
+              disabled={!enableNameSave}
+              onPress={onNameSave}
+              title="save name change"
+            />
+
+            <ScrollableSpacer height={40} />
+            <DisplayPhoneNumText
+              phoneNumber={userInfo.phoneNumber}
+              fontSize={21}
+            />
+            <ScrollableSpacer height={20} />
+            <GenericInput
+              placeholder="Update Phone Number"
+              onChange={(text) => setPhone(text)}
+              keyboardType="number-pad"
+            />
+
+            <ScrollableSpacer height={20} />
+            <ThinButton
+              colorOne="#282C31"
+              colorTwo="#22262B"
+              disabled={!enablePhoneSave}
+              onPress={onPhoneSave}
+              title="save phone number"
+            />
+            <LogoutButton whereTo={() => navigation.navigate("Login")} />
           </View>
-        </SafeAreaView>
-      </DismissKeyboard>
-    </ScrollView>
+        </ScrollableContainer>
+      </View>
+    </AvoidKeyboard>
   );
 };
 
@@ -290,11 +199,10 @@ const styles = StyleSheet.create({
   },
   body: {
     alignItems: "center",
-    marginVertical: 25,
+    paddingBottom: 25,
     justifyContent: "space-between",
+    flex: 1,
   },
-
-  scroll: {},
 
   centerAvatar: {
     justifyContent: "center",
@@ -332,7 +240,7 @@ const styles = StyleSheet.create({
   normalText: {
     color: colors.white,
     textAlign: "center",
-    fontSize: 18,
+    fontSize: 23,
     fontFamily: "montserrat-semi-bold",
     textShadowColor: "#00000020",
     textShadowOffset: { width: -1, height: 6 },

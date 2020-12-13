@@ -13,6 +13,7 @@ export const InfoCircle = ({
   textSize,
   array,
   isToDo,
+  isBig,
 }: InfoCircleProps) => {
   return (
     <View
@@ -21,6 +22,7 @@ export const InfoCircle = ({
         height: size,
         width: size,
         borderColor: !isToDo ? "#01A355" : "#9C14C4",
+        position: !isBig ? "absolute" : "relative",
       }}
     >
       <Text style={{ ...styles.infoNumber, fontSize: numSize }}>
@@ -45,7 +47,7 @@ export const InfoCircle = ({
 const styles = StyleSheet.create({
   infoCircle: {
     backgroundColor: "#0c0c0c",
-    position: "absolute",
+
     left: 0,
     top: -10,
     borderRadius: 5000,

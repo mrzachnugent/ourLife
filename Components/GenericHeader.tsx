@@ -20,10 +20,7 @@ export const GenericHeader = ({
         <Text style={globalStyles.pageTitleText}>{heading}</Text>
         {children}
       </View>
-      <TouchableOpacity
-        onPress={makeCall}
-        style={iconName !== "none" ? { width: 50 } : { width: 0 }}
-      >
+      <TouchableOpacity onPress={makeCall} style={{ width: 30 }}>
         {iconName !== "none" && (
           <MaterialIcons name={iconName} size={30} color={colors.white} />
         )}
@@ -45,7 +42,5 @@ const styles = StyleSheet.create({
   heading: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
-    width: 120,
   },
 });

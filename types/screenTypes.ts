@@ -26,6 +26,7 @@ export interface InfoCircleProps {
   textSize: number;
   array: GroceryInterface[] | ToDoInterface[];
   isToDo: boolean;
+  isBig?: boolean;
 }
 
 export interface OnlyChildren {
@@ -38,4 +39,69 @@ export interface GenericHeadingProps {
   heading: string;
   children?: React.ReactNode;
   iconName: string;
+}
+
+export interface ThinButtonProps {
+  colorOne: string;
+  colorTwo: string;
+  onPress(): void;
+  title: string;
+  disabled: boolean;
+}
+
+export interface DisplayPhoneNumTextProps {
+  phoneNumber: string | null;
+  fontSize: number;
+}
+
+export interface ScrollableSpacerProps {
+  height: number;
+}
+
+type KeyboardTypes =
+  | "default"
+  | "email-address"
+  | "numeric"
+  | "phone-pad"
+  | "number-pad"
+  | "decimal-pad"
+  | "visible-password"
+  | "ascii-capable"
+  | "numbers-and-punctuation"
+  | "url"
+  | "name-phone-pad"
+  | "twitter"
+  | "web-search"
+  | undefined;
+
+export interface GenericInputProps {
+  onChange(ev: string): void;
+  placeholder: string;
+  keyboardType?: KeyboardTypes;
+  autoCapitalize?: "none" | "sentences" | "words" | "characters" | undefined;
+}
+
+export interface LogoutButtonProps {
+  whereTo(): void;
+}
+
+export interface SideButtonProps {
+  onPress(): void;
+  iconName: string;
+  text: string;
+}
+
+export interface ListItemProps {
+  item: any;
+  onLongPress(item: any): void;
+  onCompleted(item: any): void;
+  onPress(item: any): void;
+  colorOne: string;
+  colorTwo: string;
+}
+
+export interface QuantityPickerProps {
+  selectedValue: string;
+  onValueChange(itemValue: string | number, itemIndex: number): void;
+  isTodo: boolean;
 }

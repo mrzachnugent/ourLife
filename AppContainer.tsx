@@ -15,15 +15,7 @@ import {
 
 import { useDispatch, useSelector } from "react-redux";
 import { InitialState } from "./types/reducerTypes";
-import {
-  firstTimer,
-  loggedIn,
-  loggedOut,
-  updateGroceryList,
-  updateToDoList,
-  updateUser,
-  userStateUpdate,
-} from "./actions";
+import { firstTimer, loggedIn, loggedOut, userStateUpdate } from "./actions";
 import { RootStackParamList } from "./types/navigationTypes";
 
 import apiKeys from "./config/keys";
@@ -45,7 +37,6 @@ const Stack = createStackNavigator<RootStackParamList>();
 
 //AppContainer serves as a screen navigator
 const AppContainer: FC = () => {
-  const isMounted = useRef<boolean>(true);
   const dispatch = useDispatch();
   const appInfo = useSelector((state: InitialState) => state);
   const userInfo = useSelector((state: InitialState) => state.user);
@@ -70,94 +61,25 @@ const AppContainer: FC = () => {
   //get user data from firestore
   const usersRef = db.collection("users");
 
-  //listen to changes on firebase and update the redux store
-  const updateUserInfo = async () => {
-    if (!userInfo.uid) return null;
-
-    try {
-      usersRef.doc(userInfo.uid).onSnapshot((doc) => {
-        if (
-          !userInfo.otherHalfUid ||
-          !userInfo.relationshipId ||
-          !userInfo.partnerName
-        ) {
-          return null;
-        }
-        dispatch(
-          updateUser({
-            otherHalfUid: doc.data()?.otherHalfUid,
-            relationshipId: doc.data()?.relationshipId,
-            chatRoom: doc.data()?.chatRoom,
-            groceryList: doc.data()?.groceryList,
-            toDoList: doc.data()?.toDoList,
-            halfId: doc.data()?.halfId,
-          })
-        );
-      });
-    } catch (err) {
-      Alert.alert("UH OH", err.message);
-    }
-  };
-
-  const getGroceryListFromFirebase = async () => {
-    if (!userInfo.groceryList) {
-      return null;
-    }
-    const groceryListRef = db
-      .collection("groceryLists")
-      .doc(userInfo.groceryList);
-    try {
-      const getDocument = await groceryListRef.get();
-      const getGroceryList = await getDocument.data()?.groceryList;
-      dispatch(updateGroceryList(getGroceryList));
-    } catch (err) {
-      Alert.alert("UH OH", err.message);
-    }
-  };
-  const getToDoListFromFirebase = async () => {
-    if (!userInfo.toDoList) {
-      return null;
-    }
-    const toDoListRef = db.collection("toDoLists").doc(userInfo.toDoList);
-    try {
-      const getDocument = await toDoListRef.get();
-      const getToDoList = await getDocument.data()?.messages;
-      dispatch(updateToDoList(getToDoList));
-    } catch (err) {
-      Alert.alert("UH OH", err.message);
-    }
-  };
-
-  useEffect(() => {
-    getGroceryListFromFirebase();
-    getToDoListFromFirebase();
-
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
-
   useEffect(() => {
     firstTime();
-    updateUserInfo();
 
     //when user logs in, redux store is populated with firebase user data
     firebase.auth().onAuthStateChanged(async (user) => {
       if (user) {
         dispatch(loggedIn());
-        const userDocument = await usersRef.doc(user.uid).get();
-        if (userDocument.exists) {
-          dispatch(userStateUpdate(userDocument.data()));
-        } else {
-          Alert.alert("Please close the application and try again.");
+        try {
+          const userDocument = await usersRef.doc(user.uid).get();
+          if (userDocument.exists) {
+            dispatch(userStateUpdate(userDocument.data()));
+          }
+        } catch (err) {
+          Alert.alert("UH OH", err.message);
         }
       } else {
         dispatch(loggedOut());
       }
     });
-    return () => {
-      isMounted.current = false;
-    };
   }, []);
 
   return (

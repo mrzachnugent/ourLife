@@ -164,6 +164,17 @@ export const userReducer = (state = initialState, action: any) => {
         ...state,
         chatArrLength: action.payload,
       };
+    case "RESET_TO_INITIAL":
+      return {
+        firstTime: initialState.firstTime,
+        loadingState: initialState.loadingState,
+        isLoggedIn: initialState.isLoggedIn,
+        groceryModalVisible: initialState.groceryModalVisible,
+        toDoModalVisible: initialState.toDoModalVisible,
+        groceryArr: initialState.groceryArr,
+        toDoArr: initialState.toDoArr,
+        user: { ...initialState.user },
+      };
 
     default:
       return state;

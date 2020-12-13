@@ -1,27 +1,32 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   View,
-  Text,
-  SafeAreaView,
   StyleSheet,
-  Image,
   Alert,
-} from "react-native";
-import {
-  TouchableHighlight,
+  Linking,
   TouchableOpacity,
-} from "react-native-gesture-handler";
+} from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import { loaded, loading, updateUser } from "../actions";
+
+import { InitialState } from "../types/reducerTypes";
+
 import firebase from "firebase";
 import "firebase/firestore";
-import { globalStyles, colors } from "../styles/globalStyles";
+
 import { MaterialIcons } from "@expo/vector-icons";
-import { useDispatch, useSelector } from "react-redux";
-import { displayPhoneNum } from "../utilities";
-import { LinearGradient } from "expo-linear-gradient";
-import { loaded, loading, updateUser } from "../actions";
+
 import { LoadingIndicator } from "../Components/LoadingIndicator";
+import { DismissKeyboard } from "../Components/DismissKeyboard";
+import { GenericHeader } from "../Components/GenericHeader";
+import { PartnerBigAvatar } from "../Components/PartnerBigAvatar";
+import { ThinButton } from "../Components/ThinButton";
+
+import { colors } from "../styles/globalStyles";
+import { DisplayPhoneNumText } from "../Components/DislpayPhoneNumText";
 
 export const TheirAccount = ({ navigation }: { navigation: any }) => {
+  const isMounted = useRef<boolean>(true);
   const db = firebase.firestore();
   const userRef = db.collection("users");
   const dispatch = useDispatch();
@@ -29,20 +34,27 @@ export const TheirAccount = ({ navigation }: { navigation: any }) => {
   const chatRoomsRef = db.collection("chatRooms");
   const groceryListsRef = db.collection("groceryLists");
   const toDoListsRef = db.collection("toDoLists");
-  const userInfo = useSelector((state: any) => state.user);
-  const appInfo = useSelector((state: any) => state);
+  const userInfo = useSelector((state: InitialState) => state.user);
+  const appInfo = useSelector((state: InitialState) => state);
 
   useEffect(() => {
-    let isMounted = true;
     return () => {
-      isMounted = false;
+      isMounted.current = false;
     };
   }, []);
 
   const handleRemoveConnection = async () => {
-    const halfId1 = Math.random().toString(36).substring(4);
-    const halfId2 = Math.random().toString(36).substring(4);
-
+    if (
+      !isMounted.current ||
+      !userInfo.otherHalfUid ||
+      !userInfo.relationshipId ||
+      !userInfo.uid
+    ) {
+      return null;
+    }
+    const halfId1 = Math.random().toString(36).substring(7);
+    const halfId2 = Math.random().toString(36).substring(7);
+    dispatch(loading());
     try {
       //update partners user document
       await userRef.doc(userInfo.otherHalfUid).update({
@@ -90,89 +102,64 @@ export const TheirAccount = ({ navigation }: { navigation: any }) => {
           halfId: halfId2,
         })
       );
+      dispatch(loaded());
     } catch (err) {
       Alert.alert("UH OH", err.message);
       dispatch(loaded());
     }
   };
 
-  const handleRemoveBtn = async () => {
-    dispatch(loading());
-    Promise.all([handleRemoveConnection]).then(() => dispatch(loaded()));
+  const handleOnPressRemoveConnection = () => {
+    Alert.alert(
+      "ARE YOU SURE?",
+      "This will permenantly delete the connection and any data that is shared between you. This includes lists and messages.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Yes I'm sure",
+          style: "destructive",
+          onPress: handleRemoveConnection,
+        },
+      ]
+    );
   };
 
   return (
-    <SafeAreaView style={globalStyles.androidSafeArea}>
+    <DismissKeyboard>
       {appInfo.loadingState && <LoadingIndicator />}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.navigate("Dashboard")}>
-          <MaterialIcons name="arrow-back" size={30} color={colors.white} />
-        </TouchableOpacity>
-        <TouchableHighlight>
-          <Text style={globalStyles.titleText}>{userInfo.partnerName}</Text>
-        </TouchableHighlight>
+      <GenericHeader
+        goBack={() => navigation.navigate("Dashboard")}
+        heading={userInfo.partnerName ? userInfo.partnerName : "No name"}
+        iconName="none"
+      />
 
-        <View style={{ width: 30 }} />
-      </View>
       <View style={styles.body}>
-        <View style={styles.centerAvatar}>
-          {userInfo.partnerAvatarSrc ? (
-            <Image
-              // source={require("../assets/mel-avatar.jpg")}
-              source={{ uri: userInfo.partnerAvatarSrc }}
-              style={{
-                width: "99.8%",
-                height: "99.8%",
-                opacity: 1,
-                borderRadius: 500,
-              }}
-            />
-          ) : (
-            <MaterialIcons name="person" size={150} color={colors.white} />
-          )}
-        </View>
-        <Text
-          style={
-            userInfo.partnerPhoneNumber
-              ? styles.normalText
-              : { ...styles.normalText, opacity: 0.2 }
-          }
+        <PartnerBigAvatar disabled={true} onPress={() => null} />
+        <TouchableOpacity
+          disabled={!userInfo.partnerPhoneNumber}
+          onPress={() => Linking.openURL(`tel:${userInfo.partnerPhoneNumber}`)}
+          style={styles.phoneButton}
         >
-          {!userInfo.partnerPhoneNumber
-            ? "(555) 555-5555"
-            : displayPhoneNum(userInfo.partnerPhoneNumber)}
-        </Text>
-        <LinearGradient
-          start={{ x: 0.0, y: 0.0 }}
-          end={{ x: 1, y: 1.0 }}
-          locations={[0, 1]}
-          colors={["#861010", "#cc1e1e"]}
-          style={globalStyles.btnContainer}
-        >
-          <TouchableOpacity
-            style={globalStyles.mainBtns}
-            onPress={() =>
-              Alert.alert(
-                "ARE YOU SURE?",
-                "This will permenantly delete the connection and any data that is shared between you. This includes lists and messages.",
-                [
-                  { text: "Cancel", style: "cancel" },
-                  {
-                    text: "Yes I'm sure",
-                    style: "destructive",
-                    onPress: handleRemoveConnection,
-                  },
-                ]
-              )
-            }
-          >
-            <Text style={{ ...globalStyles.titleText, fontSize: 16 }}>
-              remove connection
-            </Text>
-          </TouchableOpacity>
-        </LinearGradient>
+          <MaterialIcons
+            name="phone"
+            size={25}
+            color={colors.white}
+            style={{ marginRight: 10 }}
+          />
+          <DisplayPhoneNumText
+            phoneNumber={userInfo.partnerPhoneNumber}
+            fontSize={23}
+          />
+        </TouchableOpacity>
+        <ThinButton
+          colorOne="#861010"
+          colorTwo="#cc1e1e"
+          onPress={handleOnPressRemoveConnection}
+          title="remove connection"
+          disabled={false}
+        />
       </View>
-    </SafeAreaView>
+    </DismissKeyboard>
   );
 };
 
@@ -182,30 +169,16 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 20,
   },
-  centerAvatar: {
-    justifyContent: "center",
-    alignItems: "center",
-    width: 275,
-    height: 275,
-    backgroundColor: colors.black,
-    borderColor: colors.white,
-    borderWidth: 2,
-    borderRadius: 500,
-    marginBottom: 30,
-  },
 
   body: {
     alignItems: "center",
-    justifyContent: "space-around",
+    justifyContent: "space-evenly",
     flex: 1,
+    paddingBottom: 45,
   },
-  normalText: {
-    color: colors.white,
-    textAlign: "center",
-    fontSize: 23,
-    fontFamily: "montserrat-semi-bold",
-    textShadowColor: "#00000020",
-    textShadowOffset: { width: -1, height: 6 },
-    textShadowRadius: 10,
+
+  phoneButton: {
+    flexDirection: "row",
+    alignItems: "center",
   },
 });

@@ -1,27 +1,33 @@
 import React from "react";
 import { Text, View, Image, StyleSheet, Alert } from "react-native";
-import firebase, { storage } from "firebase";
-import "firebase/firestore";
-import "firebase/storage";
-import { colors } from "../styles/globalStyles";
-import { LinearGradient } from "expo-linear-gradient";
-import { globalStyles } from "../styles/globalStyles";
 import { TouchableOpacity } from "react-native-gesture-handler";
-import * as ImagePicker from "expo-image-picker";
-import { MaterialIcons } from "@expo/vector-icons";
-import { DismissKeyboard } from "../Components/DismissKeyboard";
 import { useDispatch, useSelector } from "react-redux";
 import { avatarSrcUpdate, loaded, loading } from "../actions";
+
+import { UploadAvatarNavProps } from "../types/navigationTypes";
+import { InitialState } from "../types/reducerTypes";
+
+import firebase from "firebase";
+import "firebase/firestore";
+import "firebase/storage";
+
+import { LinearGradient } from "expo-linear-gradient";
+import * as ImagePicker from "expo-image-picker";
+import { MaterialIcons } from "@expo/vector-icons";
+
+import { DismissKeyboard } from "../Components/DismissKeyboard";
 import { LoadingIndicator } from "../Components/LoadingIndicator";
+
+import { globalStyles, colors } from "../styles/globalStyles";
 
 const storageRef = firebase.storage().ref();
 const db = firebase.firestore();
 const usersRef = db.collection("users");
 
-export const UploadAvatar = ({ navigation }: { navigation: any }) => {
+export const UploadAvatar = ({ navigation }: UploadAvatarNavProps) => {
   const dispatch = useDispatch();
-  const appInfo = useSelector((state: any) => state);
-  const userInfo = useSelector((state: any) => state.user);
+  const appInfo = useSelector((state: InitialState) => state);
+  const userInfo = useSelector((state: InitialState) => state.user);
 
   const onUploadSuccess = () => {
     if (!userInfo.relationshipId) {
@@ -32,6 +38,8 @@ export const UploadAvatar = ({ navigation }: { navigation: any }) => {
   };
 
   const handlePress = async () => {
+    if (!userInfo.uid) return null;
+
     const { status } = await ImagePicker.requestCameraRollPermissionsAsync();
     if (status !== "granted") {
       alert("Sorry, we need camera roll permissions to make this work!");
@@ -106,9 +114,10 @@ const styles = StyleSheet.create({
   black: {
     flex: 1,
     backgroundColor: "#000",
+    marginTop: -35,
   },
   background: {
-    flex: 0.92,
+    flex: 0.9,
     justifyContent: "space-evenly",
     alignItems: "center",
     backgroundColor: colors.black,

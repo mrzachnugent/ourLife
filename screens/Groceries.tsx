@@ -1,44 +1,43 @@
 import React, { useEffect, useRef } from "react";
-import {
-  View,
-  Text,
-  SafeAreaView,
-  StyleSheet,
-  Image,
-  Alert,
-} from "react-native";
-import { ScrollView, TouchableOpacity } from "react-native-gesture-handler";
+import { View, Text, StyleSheet, Image, Alert } from "react-native";
+import { ScrollView } from "react-native-gesture-handler";
+
+import { useDispatch, useSelector } from "react-redux";
+import { loaded, loading, switchModal, updateGroceryList } from "../actions";
+
+import { GroceryInterface, InitialState } from "../types/reducerTypes";
+import { DashboardNavProps } from "../types/navigationTypes";
+
 import firebase from "firebase";
 import "firebase/firestore";
-import { globalStyles, colors } from "../styles/globalStyles";
-import { MaterialIcons } from "@expo/vector-icons";
-import { Feather } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
-import { ModalAddGroceries } from "../Components/ModalAddGroceries";
-import { loaded, loading, switchModal, updateGroceryList } from "../actions";
-import { useDispatch, useSelector } from "react-redux";
-import {
-  getIncompleteItems,
-  moveToTheBack,
-  moveToTheFront,
-  removeSingleItem,
-} from "../utilities";
-import { LoadingIndicator } from "../Components/LoadingIndicator";
 
-export const Groceries = ({ navigation }: { navigation: any }) => {
+import { moveToTheBack, moveToTheFront, removeSingleItem } from "../utilities";
+
+import { ModalAddGroceries } from "../Components/ModalAddGroceries";
+import { LoadingIndicator } from "../Components/LoadingIndicator";
+import { DismissKeyboard } from "../Components/DismissKeyboard";
+import { GenericHeader } from "../Components/GenericHeader";
+import { SideButton } from "../Components/SideButton";
+import { InfoCircle } from "../Components/InfoCircle";
+import { ListItem } from "../Components/ListItem";
+
+import { colors } from "../styles/globalStyles";
+
+export const Groceries = ({ navigation }: DashboardNavProps) => {
   const isMounted = useRef<boolean>(true);
   const dispatch = useDispatch();
-  const userInfo = useSelector((state: any) => state.user);
-  const appInfo = useSelector((state: any) => state);
-  const groArray: [] = useSelector((state: any) => state?.groceryArr);
+  const userInfo = useSelector((state: InitialState) => state.user);
+  const appInfo = useSelector((state: InitialState) => state);
+  const groArray: GroceryInterface[] = useSelector(
+    (state: InitialState) => state?.groceryArr
+  );
   const db = firebase.firestore();
-  const groceryListRef = db
-    .collection("groceryLists")
-    .doc(userInfo.groceryList);
+  const groceryListDb = db.collection("groceryLists");
 
   const updateReduxGroceries = async () => {
-    if (!isMounted.current) return null;
+    if (!userInfo.groceryList) return null;
     try {
+      const groceryListRef = groceryListDb.doc(userInfo.groceryList);
       groceryListRef.onSnapshot((doc) => {
         if (!isMounted.current) return null;
         dispatch(updateGroceryList(doc.data()?.groceryList));
@@ -48,9 +47,11 @@ export const Groceries = ({ navigation }: { navigation: any }) => {
     }
   };
 
-  const handleCompleted = async (item: any) => {
+  const handleCompleted = async (item: GroceryInterface) => {
+    if (!userInfo.groceryList) return null;
     dispatch(loading());
     try {
+      const groceryListRef = groceryListDb.doc(userInfo.groceryList);
       const getDocument = await groceryListRef.get();
       const getGroceryList = await getDocument.data()?.groceryList;
       if (!item.completed) {
@@ -75,8 +76,10 @@ export const Groceries = ({ navigation }: { navigation: any }) => {
   };
 
   const handleDeleteAll = async () => {
+    if (!userInfo.groceryList) return null;
     dispatch(loading());
     try {
+      const groceryListRef = groceryListDb.doc(userInfo.groceryList);
       groceryListRef.set({
         groceryList: [],
       });
@@ -87,14 +90,20 @@ export const Groceries = ({ navigation }: { navigation: any }) => {
     }
   };
 
-  const handleDeleteSingleItem = async (item: any) => {
+  const handleDeleteSingleItem = async (item: GroceryInterface) => {
+    if (!userInfo.groceryList) return null;
     dispatch(loading());
     try {
+      const groceryListRef = groceryListDb.doc(userInfo.groceryList);
       const getDocument = await groceryListRef.get();
-      const getGroceryList: [] = await getDocument.data()?.groceryList;
+      const getGroceryList: GroceryInterface[] = await getDocument.data()
+        ?.groceryList;
 
-      const newList: [] = await removeSingleItem(getGroceryList, item);
-      groceryListRef.set({
+      const newList: GroceryInterface[] = await removeSingleItem(
+        getGroceryList,
+        item
+      );
+      await groceryListRef.set({
         groceryList: [...newList],
       });
       dispatch(loaded());
@@ -119,7 +128,7 @@ export const Groceries = ({ navigation }: { navigation: any }) => {
       ]
     );
   };
-  const handleDeleteSingleItemButton = (item: any) => {
+  const handleDeleteSingleItemButton = (item: GroceryInterface) => {
     Alert.alert("DELETE ITEM?", `Do you want to delete ${item.name}?`, [
       { text: "Cancel", style: "cancel" },
       {
@@ -130,249 +139,84 @@ export const Groceries = ({ navigation }: { navigation: any }) => {
     ]);
   };
 
+  const handleItemDelails = (item: GroceryInterface) => {
+    console.log(item);
+  };
+
   useEffect(() => {
     updateReduxGroceries();
-
     return () => {
       isMounted.current = false;
     };
   }, []);
 
   return (
-    <SafeAreaView style={globalStyles.androidSafeArea}>
-      <View style={styles.container}>
-        {appInfo.loadingState && <LoadingIndicator />}
-        <ModalAddGroceries />
-        <TouchableOpacity onPress={() => navigation.navigate("Dashboard")}>
-          <MaterialIcons name="arrow-back" size={30} color={colors.white} />
-        </TouchableOpacity>
-        <View style={styles.heading}>
-          <Text style={globalStyles.pageTitleText}>GROCERIES</Text>
-          <Image
-            source={require("../assets/dancing-panda.png")}
-            style={{ width: 50, height: 50 }}
-          />
-        </View>
-        <View />
-      </View>
+    <DismissKeyboard>
+      {appInfo.loadingState && <LoadingIndicator />}
+      <ModalAddGroceries />
+      <GenericHeader
+        goBack={() => navigation.navigate("Dashboard")}
+        heading="GROCERIES"
+        iconName="none"
+      >
+        <Image
+          source={require("../assets/dancing-panda.png")}
+          style={{ width: 50, height: 50, marginLeft: 20 }}
+        />
+      </GenericHeader>
       <View style={styles.infoSection}>
-        <LinearGradient
-          start={{ x: 0.0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          locations={[0, 0.9]}
-          colors={["#282C31", "#22262B"]}
-          style={styles.button}
-        >
-          <TouchableOpacity
-            style={globalStyles.mainBtns}
-            onPress={() => dispatch(switchModal())}
-          >
-            <Feather name="plus" size={40} color={colors.white} />
-            <Text style={globalStyles.littleText}>ADD</Text>
-          </TouchableOpacity>
-        </LinearGradient>
-        <View style={{ flex: 1, alignItems: "center" }}>
-          <View style={styles.infoCircle}>
-            <Text style={styles.infoNumber}>
-              {Boolean(groArray) && getIncompleteItems(groArray).length}
-            </Text>
-            <Text style={styles.infoItemText}>
-              {Boolean(groArray) && getIncompleteItems(groArray).length === 0
-                ? "items"
-                : Boolean(groArray) && getIncompleteItems(groArray).length === 1
-                ? "item"
-                : "items"}
-            </Text>
-          </View>
-        </View>
-        <LinearGradient
-          start={{ x: 0.0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          locations={[0, 0.9]}
-          colors={["#282C31", "#22262B"]}
-          style={
-            Boolean(groArray) && Boolean(groArray.length)
-              ? styles.button
-              : { ...styles.button, opacity: 0.5 }
-          }
-        >
-          <TouchableOpacity
-            style={globalStyles.mainBtns}
-            onPress={handleDeleteButton}
-            disabled={Boolean(groArray) && !Boolean(groArray.length)}
-          >
-            <MaterialIcons name="delete" size={40} color={colors.white} />
-            <Text style={globalStyles.littleText}>ALL</Text>
-          </TouchableOpacity>
-        </LinearGradient>
+        <SideButton
+          text="ADD"
+          onPress={() => dispatch(switchModal())}
+          iconName="plus"
+        />
+        <InfoCircle
+          size={175}
+          numSize={35}
+          textSize={22}
+          array={groArray}
+          isToDo={false}
+          isBig={true}
+        />
+        <SideButton onPress={handleDeleteButton} iconName="trash" text="ALL" />
       </View>
       <View style={styles.body}>
         <Text style={styles.titleText}>PICK UP</Text>
         {Boolean(groArray) && groArray.length !== 0 && (
           <ScrollView style={styles.listView}>
-            {groArray.map((item: any) => {
+            {groArray.map((item: GroceryInterface) => {
               return (
-                <View style={styles.itemContainer} key={item._id}>
-                  <LinearGradient
-                    start={{ x: 0.0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    locations={[0, 1]}
-                    colors={["#22262B", "#282C31"]}
-                    style={
-                      !item.completed
-                        ? {
-                            ...styles.checkButton,
-                            borderWidth: 0,
-                            borderBottomRightRadius: 0,
-                            borderTopRightRadius: 0,
-                          }
-                        : {
-                            ...styles.checkButton,
-                            borderWidth: 0,
-                            borderBottomRightRadius: 0,
-                            borderTopRightRadius: 0,
-                            opacity: 0.5,
-                          }
-                    }
-                  >
-                    <View style={globalStyles.mainBtns}>
-                      <Text style={styles.smallText}>{item.quantity} ✕</Text>
-                    </View>
-                  </LinearGradient>
-                  <LinearGradient
-                    start={{ x: 0.0, y: 0.25 }}
-                    end={{ x: 1, y: 0.0 }}
-                    locations={[0, 1]}
-                    colors={["#01A355", "#14D1D1"]}
-                    style={
-                      !item.completed
-                        ? styles.itemBtn
-                        : { ...styles.itemBtn, opacity: 0.3 }
-                    }
-                  >
-                    <TouchableOpacity
-                      style={styles.itemTouchable}
-                      onPress={() => console.log("TODO: Edit item")}
-                      onLongPress={() => handleDeleteSingleItemButton(item)}
-                    >
-                      <Text style={styles.itemText}>{item.name}</Text>
-                    </TouchableOpacity>
-                  </LinearGradient>
-                  <LinearGradient
-                    start={{ x: 0.0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    locations={[0, 0.9]}
-                    colors={["#282C31", "#22262B"]}
-                    style={
-                      !item.completed
-                        ? styles.checkButton
-                        : { ...styles.checkButton, borderColor: "#01A355" }
-                    }
-                  >
-                    <TouchableOpacity
-                      style={globalStyles.mainBtns}
-                      onPress={() => handleCompleted(item)}
-                    >
-                      <Feather
-                        name="check"
-                        size={30}
-                        color={!item.completed ? "#ffffff50" : "#01A355"}
-                      />
-                    </TouchableOpacity>
-                  </LinearGradient>
-                </View>
+                <ListItem
+                  item={item}
+                  onLongPress={handleDeleteSingleItemButton}
+                  onPress={handleItemDelails}
+                  onCompleted={handleCompleted}
+                  colorOne="#01A355"
+                  colorTwo="#14D1D1"
+                  key={item._id}
+                />
               );
             })}
           </ScrollView>
         )}
       </View>
-    </SafeAreaView>
+    </DismissKeyboard>
   );
 };
 
 const styles = StyleSheet.create({
-  //header
-  container: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    padding: 20,
-    width: "100%",
-    borderBottomWidth: 1,
-    borderBottomColor: colors.gray,
-  },
-  title: {
-    color: colors.white,
-  },
-
-  heading: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    width: 210,
-  },
-  button: {
-    ...globalStyles.btnContainer,
-    width: 80,
-    height: 80,
-    justifyContent: "center",
-    borderRadius: 15,
-    borderWidth: 1,
-
-    borderStyle: "solid",
-  },
-  checkButton: {
-    ...globalStyles.btnContainer,
-    width: 60,
-    height: 60,
-    justifyContent: "center",
-    borderRadius: 15,
-    borderWidth: 1,
-
-    borderStyle: "solid",
-  },
-  quantity: {
-    ...globalStyles.btnContainer,
-    width: 60,
-    height: 60,
-    justifyContent: "center",
-    borderRadius: 15,
-    borderWidth: 1,
-
-    borderStyle: "solid",
-  },
-
   infoSection: {
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: 10,
-    paddingTop: 20,
-  },
-
-  infoCircle: {
-    backgroundColor: "#0c0c0c",
-    height: 175,
-    width: 175,
-    borderRadius: 5000,
-    color: colors.white,
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 3,
-    borderColor: "#01A355",
-  },
-  infoNumber: {
-    color: colors.white,
-    fontSize: 35,
-    fontFamily: "montserrat-bold",
-  },
-  infoItemText: {
-    color: colors.white,
-    fontSize: 22,
-    fontFamily: "montserrat-bold",
+    paddingTop: 40,
+    paddingBottom: 15,
   },
 
   body: {
-    padding: 15,
+    paddingHorizontal: 15,
+    paddingBottom: 20,
     flex: 1,
   },
   titleText: {
@@ -381,38 +225,7 @@ const styles = StyleSheet.create({
     fontFamily: "montserrat-bold",
     paddingBottom: 10,
   },
-  itemContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    flex: 1,
-    marginVertical: 10,
-  },
-
   listView: {
     flex: 1,
-    // backgroundColor: "#fff",
-  },
-  itemBtn: {
-    flex: 1,
-    borderTopRightRadius: 8,
-    borderBottomRightRadius: 8,
-    marginRight: 5,
-    height: 60,
-  },
-
-  smallText: {
-    color: colors.white,
-    fontSize: 18,
-  },
-  itemText: {
-    color: colors.white,
-    fontSize: 25,
-    textShadowColor: "#00000060",
-    textShadowOffset: { width: -1, height: 6 },
-    textShadowRadius: 15,
-  },
-
-  itemTouchable: {
-    padding: 11,
   },
 });

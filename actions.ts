@@ -85,3 +85,6 @@ export const updateChatArrLenth = (num: any) => ({
   type: "UPDATE_CHAT_ARR_LENGTH",
   payload: num,
 });
+export const resetToInitial = () => ({
+  type: "RESET_TO_INITIAL",
+});

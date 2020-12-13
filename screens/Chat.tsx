@@ -96,7 +96,7 @@ export const Chat = ({ navigation }: DashboardNavProps) => {
       >
         <Image
           source={require("../assets/unicorn.png")}
-          style={{ width: 30, height: 60 }}
+          style={{ width: 30, height: 60, marginLeft: 20 }}
         />
       </GenericHeader>
       <GiftedChat

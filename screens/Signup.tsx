@@ -1,35 +1,38 @@
-import React, { FC, useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Text, View, Image, StyleSheet, Alert, TextInput } from "react-native";
-import {
-  TouchableHighlight,
-  TouchableOpacity,
-} from "react-native-gesture-handler";
+import { TouchableOpacity } from "react-native-gesture-handler";
+import { useDispatch, useSelector } from "react-redux";
+import { loaded, loading, loggedIn } from "../actions";
+
+import { InitialState } from "../types/reducerTypes";
+import { SignupNavProps } from "../types/navigationTypes";
+
 import firebase from "firebase";
 import "firebase/firestore";
+
 import { MaterialIcons } from "@expo/vector-icons";
 import { Entypo } from "@expo/vector-icons";
 import { FontAwesome5 } from "@expo/vector-icons";
+import { ValidateEmail } from "../utilities";
 
 import { colors, globalStyles } from "../styles/globalStyles";
 import { LinearGradient } from "expo-linear-gradient";
-import { DismissKeyboard } from "../Components/DismissKeyboard";
-import { LoadingIndicator } from "../Components/LoadingIndicator";
-import { useDispatch, useSelector } from "react-redux";
-import { loaded, loading, loggedIn } from "../actions";
-import { ValidateEmail } from "../utilities";
-import { InitialState } from "../types/reducerTypes";
-import { Navigation } from "../types/navigationTypes";
 
-export const Signup = ({ navigation }: { navigation: any }) => {
+import { LoadingIndicator } from "../Components/LoadingIndicator";
+import { AvoidKeyboard } from "../Components/AvoidKeyboard";
+import { GenericInput } from "../Components/GenericInput";
+
+export const Signup = ({ navigation }: SignupNavProps) => {
+  const isMounted = useRef<boolean>(true);
   const dispatch = useDispatch();
   const appInfo = useSelector((state: InitialState) => state);
   const userInfo = useSelector((state: InitialState) => state.user);
 
-  const [showPassword, setShowPassword] = useState(false);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [submitEnabled, setSubmitEnabled] = useState(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [name, setName] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [submitEnabled, setSubmitEnabled] = useState<boolean>(false);
 
   //access firestore
   const db = firebase.firestore();
@@ -38,16 +41,13 @@ export const Signup = ({ navigation }: { navigation: any }) => {
     if (!userInfo.avatarSrc) {
       navigation.navigate("UploadAvatar");
       return;
-    }
-    if (!userInfo.relationshipId) {
+    } else {
       navigation.navigate("ShareYourLink");
       return;
     }
-    navigation.navigate("Dashboard");
   };
 
   useEffect(() => {
-    let isMounted = true;
     if (name.length > 1 && email.length > 8 && password.length) {
       setSubmitEnabled(true);
     } else {
@@ -55,7 +55,7 @@ export const Signup = ({ navigation }: { navigation: any }) => {
     }
 
     return () => {
-      isMounted = false;
+      isMounted.current = false;
     };
   }, [email, password, name]);
 
@@ -70,7 +70,7 @@ export const Signup = ({ navigation }: { navigation: any }) => {
         .auth()
         .createUserWithEmailAndPassword(email, password)
         .then((creds) => {
-          const halfId = Math.random().toString(36).substring(4);
+          const halfId = Math.random().toString(36).substring(7);
           db.collection("users").doc(creds.user?.uid).set({
             uid: creds.user?.uid,
             name: name,
@@ -114,57 +114,27 @@ export const Signup = ({ navigation }: { navigation: any }) => {
   };
 
   return (
-    <DismissKeyboard>
+    <AvoidKeyboard>
       <View style={styles.black}>
         {appInfo.loadingState && <LoadingIndicator />}
         <View style={styles.background}>
           <View>
-            <Text style={styles.smallText}>Welcome to</Text>
             <Text style={styles.heading}>OurLife</Text>
           </View>
           <View>
-            <TouchableHighlight
-              disabled={true}
-              style={{ alignItems: "center" }}
-            >
-              <Image
-                source={require("../assets/donut-sloth.png")}
-                style={{ height: 108, width: 108, marginBottom: 30 }}
-              />
-            </TouchableHighlight>
             <Text style={styles.smallText}>Sign up:</Text>
           </View>
 
           <View style={styles.form}>
-            <LinearGradient
-              start={{ x: 0.0, y: 0.25 }}
-              end={{ x: 1, y: 1.0 }}
-              locations={[0, 1]}
-              colors={["#2C333A", "#2C333A"]}
-              style={globalStyles.inputContainer}
-            >
-              <TextInput
-                placeholder="Enter name"
-                placeholderTextColor="#FFFFFF75"
-                style={globalStyles.input}
-                onChangeText={(text) => setName(text)}
-              />
-            </LinearGradient>
-            <LinearGradient
-              start={{ x: 0.0, y: 0.25 }}
-              end={{ x: 1, y: 1.0 }}
-              locations={[0, 1]}
-              colors={["#2C333A", "#2C333A"]}
-              style={globalStyles.inputContainer}
-            >
-              <TextInput
-                textContentType="emailAddress"
-                placeholder="Enter email address"
-                placeholderTextColor="#FFFFFF75"
-                style={globalStyles.input}
-                onChangeText={(text) => setEmail(text)}
-              />
-            </LinearGradient>
+            <GenericInput
+              onChange={(text) => setName(text)}
+              placeholder="Enter name"
+            />
+            <GenericInput
+              onChange={(text) => setEmail(text)}
+              placeholder="Enter email address"
+            />
+
             <LinearGradient
               start={{ x: 0.0, y: 0.25 }}
               end={{ x: 1, y: 1.0 }}
@@ -232,6 +202,12 @@ export const Signup = ({ navigation }: { navigation: any }) => {
               </TouchableOpacity>
             </LinearGradient>
           </View>
+          <View style={{ alignItems: "center" }}>
+            <Image
+              source={require("../assets/donut-sloth.png")}
+              style={{ height: 108, width: 108, marginBottom: 30 }}
+            />
+          </View>
         </View>
         <TouchableOpacity
           style={{
@@ -245,7 +221,7 @@ export const Signup = ({ navigation }: { navigation: any }) => {
           <Text style={globalStyles.littleText}>log in</Text>
         </TouchableOpacity>
       </View>
-    </DismissKeyboard>
+    </AvoidKeyboard>
   );
 };
 
@@ -253,9 +229,10 @@ const styles = StyleSheet.create({
   black: {
     flex: 1,
     backgroundColor: "#000",
+    marginTop: -35,
   },
   background: {
-    flex: 0.92,
+    flex: 0.9,
     justifyContent: "space-evenly",
     alignItems: "center",
     backgroundColor: colors.black,

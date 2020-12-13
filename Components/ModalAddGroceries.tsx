@@ -1,51 +1,55 @@
-import { LinearGradient } from "expo-linear-gradient";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Modal,
   StyleSheet,
   View,
   Text,
   TouchableHighlight,
-  TouchableOpacity,
   Alert,
+  Keyboard,
 } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+
+import { loaded, loading, switchModal } from "../actions";
+import { GroceryInterface, InitialState } from "../types/reducerTypes";
+
 import firebase from "firebase";
 import "firebase/firestore";
-import { TextInput } from "react-native-gesture-handler";
-import { useDispatch, useSelector } from "react-redux";
-import { colors, globalStyles } from "../styles/globalStyles";
-import { DismissKeyboard } from "./DismissKeyboard";
-import { loaded, loading, switchModal } from "../actions";
-import { Picker } from "@react-native-community/picker";
+
 import { randomId } from "../utilities";
 import { LoadingIndicator } from "./LoadingIndicator";
+import { GenericInput } from "./GenericInput";
+import { ThinButton } from "./ThinButton";
+import { GenericHeader } from "./GenericHeader";
+import { QuantityPicker } from "./QuantityPicker";
+
+import { colors } from "../styles/globalStyles";
 
 export const ModalAddGroceries = () => {
-  const appInfo = useSelector((state: any) => state);
-  const userInfo = useSelector((state: any) => state.user);
+  const isMounted = useRef<boolean>(true);
+  const appInfo = useSelector((state: InitialState) => state);
+  const userInfo = useSelector((state: InitialState) => state.user);
   const dispatch = useDispatch();
-  const [isEnabled, setEnabled] = useState(false);
-  const [itemName, setItemName] = useState("");
-  const [quantityAmount, setQuantityAmount] = useState("1");
-  const [notes, setNotes] = useState("");
+  const [isEnabled, setEnabled] = useState<boolean>(false);
+  const [itemName, setItemName] = useState<string>("");
+  const [quantityAmount, setQuantityAmount] = useState<string>("1");
+  const [notes, setNotes] = useState<string>("");
+
+  if (!userInfo.groceryList) return null;
 
   const db = firebase.firestore();
   const groceryListRef = db
     .collection("groceryLists")
     .doc(userInfo.groceryList);
 
-  // .get()
-  // .then((doc) => console.log(doc.data()?.groceryList));
-
   useEffect(() => {
-    let isMounted = true;
     if (itemName.length) {
       setEnabled(true);
     } else {
       setEnabled(false);
     }
     return () => {
-      isMounted = true;
+      isMounted.current = false;
     };
   }, [itemName]);
 
@@ -53,7 +57,8 @@ export const ModalAddGroceries = () => {
     dispatch(loading());
     try {
       const getDocument = await groceryListRef.get();
-      const getGroceryList = await getDocument.data()?.groceryList;
+      const getGroceryList: GroceryInterface[] = await getDocument.data()
+        ?.groceryList;
       const newId = randomId();
       groceryListRef.set({
         groceryList: [
@@ -67,15 +72,22 @@ export const ModalAddGroceries = () => {
           ...getGroceryList,
         ],
       });
-      dispatch(switchModal());
       setItemName("");
       setNotes("");
       setQuantityAmount("1");
       dispatch(loaded());
+      dispatch(switchModal());
     } catch (err) {
       Alert.alert("UH OH", err.message);
       dispatch(loaded());
     }
+  };
+
+  const handleGoBack = () => {
+    setItemName("");
+    setNotes("");
+    setQuantityAmount("1");
+    dispatch(switchModal());
   };
 
   return (
@@ -85,131 +97,65 @@ export const ModalAddGroceries = () => {
       transparent={true}
       onRequestClose={() => console.log("please close me")}
     >
-      <DismissKeyboard>
-        <TouchableHighlight
-          style={styles.modalBackground}
-          onPress={() => {
-            dispatch(switchModal());
-          }}
-        >
-          <TouchableHighlight>
-            <View style={styles.modalContainer}>
-              {appInfo.loadingState && <LoadingIndicator />}
-              <Text style={{ ...styles.mainText, paddingBottom: 40 }}>
-                ADD GROCERIES
-              </Text>
-              <View>
-                <LinearGradient
-                  start={{ x: 0.0, y: 0.25 }}
-                  end={{ x: 1, y: 1.0 }}
-                  locations={[0, 1]}
-                  colors={["#2C333A", "#2C333A"]}
-                  style={{ ...globalStyles.inputContainer, width: 300 }}
-                >
-                  <TextInput
-                    placeholder="Enter name of item"
-                    placeholderTextColor="#FFFFFF75"
-                    style={globalStyles.input}
-                    onChangeText={(text) => setItemName(text)}
-                  />
-                </LinearGradient>
-                <View style={styles.quantityContainer}>
-                  <Text style={styles.mainText}>Quantity</Text>
-                  <LinearGradient
-                    start={{ x: 0.0, y: 0.25 }}
-                    end={{ x: 1, y: 1.0 }}
-                    locations={[0, 1]}
-                    colors={["#2C333A", "#2C333A"]}
-                    style={{ ...globalStyles.inputContainer, width: 100 }}
-                  >
-                    <View>
-                      <Picker
-                        selectedValue={quantityAmount}
-                        style={styles.pickerContainer}
-                        mode="dropdown"
-                        onValueChange={(itemValue, itemIndex) =>
-                          setQuantityAmount(`${itemValue}`)
-                        }
-                      >
-                        <Picker.Item label="1" value="1" />
-                        <Picker.Item label="2" value="2" />
-                        <Picker.Item label="3" value="3" />
-                        <Picker.Item label="4" value="4" />
-                        <Picker.Item label="5" value="5" />
-                        <Picker.Item label="6" value="6" />
-                        <Picker.Item label="7" value="7" />
-                        <Picker.Item label="8" value="8" />
-                        <Picker.Item label="9" value="9" />
-                        <Picker.Item label="9+" value="9+" />
-                      </Picker>
-                    </View>
-                  </LinearGradient>
-                </View>
-                <View style={styles.notesContainer}>
-                  <Text style={styles.mainText}>Add Notes</Text>
-                  <LinearGradient
-                    start={{ x: 0.0, y: 0.25 }}
-                    end={{ x: 1, y: 1.0 }}
-                    locations={[0, 1]}
-                    colors={["#2C333A", "#2C333A"]}
-                    style={{ ...globalStyles.inputContainer, width: 300 }}
-                  >
-                    <TextInput
-                      placeholder="Enter notes"
-                      placeholderTextColor="#FFFFFF75"
-                      style={globalStyles.input}
-                      onChangeText={(text) => setNotes(text)}
-                    />
-                  </LinearGradient>
-                </View>
-                <View style={{ alignItems: "center" }}>
-                  <LinearGradient
-                    start={{ x: 0.0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    locations={[0, 0.9]}
-                    colors={["#282C31", "#22262B"]}
-                    style={
-                      isEnabled
-                        ? { ...globalStyles.btnContainer, width: 200 }
-                        : {
-                            ...globalStyles.btnContainer,
-                            width: 200,
-                            opacity: 0.5,
-                          }
-                    }
-                  >
-                    <TouchableOpacity
-                      style={globalStyles.mainBtns}
-                      disabled={!isEnabled}
-                      onPress={handleAddItem}
-                    >
-                      <Text
-                        style={{
-                          ...styles.mainText,
-                          paddingTop: 0,
-                          paddingBottom: 0,
-                        }}
-                      >
-                        ADD ITEM
-                      </Text>
-                    </TouchableOpacity>
-                  </LinearGradient>
-                </View>
+      <TouchableHighlight
+        style={styles.modalBackground}
+        onPress={() => {
+          dispatch(switchModal());
+          setItemName("");
+          setNotes("");
+          setQuantityAmount("1");
+        }}
+      >
+        <TouchableHighlight onPress={() => Keyboard.dismiss()}>
+          <View style={styles.modalContainer}>
+            {appInfo.loadingState && <LoadingIndicator />}
+            <GenericHeader
+              goBack={handleGoBack}
+              heading="ADD ITEM"
+              iconName="none"
+            />
+            <View style={styles.container}>
+              <GenericInput
+                placeholder="Enter name of item"
+                onChange={(text) => setItemName(text)}
+              />
+              <QuantityPicker
+                onValueChange={(itemValue, itemIndex) =>
+                  setQuantityAmount(`${itemValue}`)
+                }
+                selectedValue={quantityAmount}
+                isTodo={false}
+              />
+
+              <View style={styles.notesContainer}>
+                <Text style={styles.mainText}>Add Notes</Text>
+                <GenericInput
+                  placeholder="Enter notes"
+                  onChange={(text) => setNotes(text)}
+                />
               </View>
+              <ThinButton
+                colorOne="#282C31"
+                colorTwo="#22262B"
+                disabled={!isEnabled}
+                onPress={handleAddItem}
+                title="ADD ITEM"
+              />
             </View>
-          </TouchableHighlight>
+          </View>
         </TouchableHighlight>
-      </DismissKeyboard>
+      </TouchableHighlight>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
   modalBackground: {
-    backgroundColor: "#00000050",
+    backgroundColor: "#00000090",
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    paddingHorizontal: 25,
   },
   modalContainer: {
     backgroundColor: colors.black,
@@ -230,22 +176,16 @@ const styles = StyleSheet.create({
   mainText: {
     color: colors.white,
     fontFamily: "montserrat-semi-bold",
-    fontSize: 25,
+    fontSize: 18,
     textAlign: "center",
     paddingTop: 25,
     paddingBottom: 15,
   },
-  pickerContainer: {
-    color: colors.white,
-    fontSize: 45,
-  },
-  quantityContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-evenly",
-    paddingTop: 15,
-  },
   notesContainer: {
     paddingBottom: 40,
+  },
+  container: {
+    alignItems: "center",
+    paddingTop: 40,
   },
 });

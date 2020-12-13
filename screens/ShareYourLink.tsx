@@ -1,24 +1,37 @@
-import React, { useEffect, useState } from "react";
-import { Text, View, Share, StyleSheet, TextInput, Alert } from "react-native";
-import { colors } from "../styles/globalStyles";
-import { LinearGradient } from "expo-linear-gradient";
-import { globalStyles } from "../styles/globalStyles";
+import React, { useEffect, useRef, useState } from "react";
+import { Text, View, Share, StyleSheet, Alert } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  loaded,
+  loading,
+  loggedOut,
+  madeConnection,
+  resetToInitial,
+} from "../actions";
+
+import { ShareYourLinkNavProps } from "../types/navigationTypes";
+import { InitialState } from "../types/reducerTypes";
+
 import firebase from "firebase";
 import "firebase/firestore";
 
 import { MaterialIcons } from "@expo/vector-icons";
-import { DismissKeyboard } from "../Components/DismissKeyboard";
-import { loaded, loading, loggedOut, madeConnection } from "../actions";
-import { useDispatch, useSelector } from "react-redux";
-import { LoadingIndicator } from "../Components/LoadingIndicator";
+import { LinearGradient } from "expo-linear-gradient";
 
-export const ShareYourLink = ({ navigation }: { navigation: any }) => {
+import { DismissKeyboard } from "../Components/DismissKeyboard";
+import { LoadingIndicator } from "../Components/LoadingIndicator";
+import { GenericInput } from "../Components/GenericInput";
+
+import { globalStyles, colors } from "../styles/globalStyles";
+
+export const ShareYourLink = ({ navigation }: ShareYourLinkNavProps) => {
+  const isMounted = useRef<boolean>(true);
   const dispatch = useDispatch();
-  const appInfo = useSelector((state: any) => state);
-  const userInfo = useSelector((state: any) => state.user);
-  const [connectorsCode, setConnectorsCode] = useState("");
-  const [enableSubmit, setEnableSubmit] = useState(false);
+  const appInfo = useSelector((state: InitialState) => state);
+  const userInfo = useSelector((state: InitialState) => state.user);
+  const [connectorsCode, setConnectorsCode] = useState<string>("");
+  const [enableSubmit, setEnableSubmit] = useState<boolean>(false);
 
   const db = firebase.firestore();
   const halfIdRef = db.collection("halfId");
@@ -29,15 +42,14 @@ export const ShareYourLink = ({ navigation }: { navigation: any }) => {
   const toDoListsRef = db.collection("toDoLists");
 
   useEffect(() => {
-    let isMounted = true;
-    if (connectorsCode.length <= 5) {
+    if (connectorsCode.length <= 4) {
       setEnableSubmit(true);
     } else {
       setEnableSubmit(false);
     }
 
     return () => {
-      isMounted = false;
+      isMounted.current = false;
     };
   }, [connectorsCode]);
 
@@ -52,8 +64,9 @@ export const ShareYourLink = ({ navigation }: { navigation: any }) => {
   };
 
   const handleOnConnect = async () => {
-    dispatch(loading());
+    if (!userInfo.halfId || !userInfo.uid) return null;
 
+    dispatch(loading());
     try {
       const doesExist = await halfIdRef.doc(connectorsCode).get();
       if (!doesExist.exists) {
@@ -143,6 +156,7 @@ export const ShareYourLink = ({ navigation }: { navigation: any }) => {
   const handleAlreadyConnected = async () => {
     dispatch(loading());
     try {
+      if (!userInfo.uid) return null;
       const firestoreUser = await usersRef.doc(userInfo.uid).get();
       const relationshipId = firestoreUser.data()?.relationshipId;
       if (!relationshipId) {
@@ -175,6 +189,51 @@ export const ShareYourLink = ({ navigation }: { navigation: any }) => {
         <View style={styles.background}>
           <View style={{ justifyContent: "center" }}>
             <Text style={styles.heading}>Connect with someone</Text>
+            <View
+              style={{
+                alignItems: "center",
+                justifyContent: "space-between",
+
+                marginTop: 25,
+              }}
+            >
+              <View style={styles.topContainer}>
+                <Text style={styles.littleText}>Enter their Connect Code</Text>
+                <GenericInput
+                  onChange={(text) => setConnectorsCode(text)}
+                  placeholder="Enter connect code"
+                  autoCapitalize="none"
+                />
+
+                <LinearGradient
+                  start={{ x: 0.0, y: 0.0 }}
+                  end={{ x: 1, y: 1.0 }}
+                  locations={[0, 1]}
+                  colors={["#1E89CC", "#9C14C4"]}
+                  style={
+                    !enableSubmit
+                      ? {
+                          ...globalStyles.btnContainer,
+                          width: 200,
+                          opacity: 1,
+                        }
+                      : {
+                          ...globalStyles.btnContainer,
+                          width: 200,
+                          opacity: 0.4,
+                        }
+                  }
+                >
+                  <TouchableOpacity
+                    style={{ ...globalStyles.mainBtns, paddingVertical: 5 }}
+                    disabled={enableSubmit}
+                    onPress={handleOnConnect}
+                  >
+                    <Text style={globalStyles.titleText}>connect</Text>
+                  </TouchableOpacity>
+                </LinearGradient>
+              </View>
+            </View>
             <Text
               style={{
                 ...styles.littleText,
@@ -183,8 +242,7 @@ export const ShareYourLink = ({ navigation }: { navigation: any }) => {
                 marginTop: 25,
               }}
             >
-              You can share your code with one other person or enter their
-              Connect Code below.
+              You can connect together once someone has entered a connect code.
             </Text>
           </View>
 
@@ -200,7 +258,7 @@ export const ShareYourLink = ({ navigation }: { navigation: any }) => {
                 height: 180,
               }}
             >
-              <Text style={styles.littleText}>Your Connect code is:</Text>
+              <Text style={styles.heading}>Your Connect code is:</Text>
               <LinearGradient
                 start={{ x: 0.0, y: 0.25 }}
                 end={{ x: 1, y: 0.0 }}
@@ -252,58 +310,6 @@ export const ShareYourLink = ({ navigation }: { navigation: any }) => {
               </LinearGradient>
             </View>
           </TouchableOpacity>
-          <View
-            style={{
-              alignItems: "center",
-              justifyContent: "space-between",
-              height: 200,
-              marginTop: 25,
-            }}
-          >
-            <Text style={styles.heading}>OR</Text>
-            <Text style={styles.littleText}>Enter their Connect Code</Text>
-            <LinearGradient
-              start={{ x: 0.0, y: 0.25 }}
-              end={{ x: 1, y: 1.0 }}
-              locations={[0, 1]}
-              colors={["#2C333A", "#2C333A"]}
-              style={globalStyles.inputContainer}
-            >
-              <TextInput
-                placeholder="Enter Connect Code"
-                placeholderTextColor="#FFFFFF75"
-                style={globalStyles.input}
-                onChangeText={(text) => setConnectorsCode(text)}
-              />
-            </LinearGradient>
-            <LinearGradient
-              start={{ x: 0.0, y: 0.0 }}
-              end={{ x: 1, y: 1.0 }}
-              locations={[0, 1]}
-              colors={["#1E89CC", "#9C14C4"]}
-              style={
-                !enableSubmit
-                  ? {
-                      ...globalStyles.btnContainer,
-                      width: 200,
-                      opacity: 1,
-                    }
-                  : {
-                      ...globalStyles.btnContainer,
-                      width: 200,
-                      opacity: 0.4,
-                    }
-              }
-            >
-              <TouchableOpacity
-                style={{ ...globalStyles.mainBtns, paddingVertical: 5 }}
-                disabled={enableSubmit}
-                onPress={handleOnConnect}
-              >
-                <Text style={globalStyles.titleText}>connect</Text>
-              </TouchableOpacity>
-            </LinearGradient>
-          </View>
         </View>
         <View style={styles.bottom}>
           <TouchableOpacity
@@ -312,7 +318,7 @@ export const ShareYourLink = ({ navigation }: { navigation: any }) => {
                 .auth()
                 .signOut()
                 .then(() => {
-                  dispatch(loggedOut());
+                  dispatch(resetToInitial());
                 })
                 .then(() => navigation.navigate("Login"))
             }
@@ -332,6 +338,7 @@ const styles = StyleSheet.create({
   black: {
     flex: 1,
     backgroundColor: "#000",
+    marginTop: -35,
   },
   background: {
     height: "85%",
@@ -345,6 +352,13 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 10,
     borderBottomLeftRadius: 40,
     borderBottomRightRadius: 40,
+  },
+
+  topContainer: {
+    alignItems: "center",
+    justifyContent: "space-around",
+    height: 150,
+    marginTop: 25,
   },
   smallText: {
     color: colors.white,
@@ -379,7 +393,7 @@ const styles = StyleSheet.create({
   },
   littleText: {
     color: colors.white,
-    textAlign: "left",
+    textAlign: "center",
     paddingHorizontal: 20,
     fontSize: 16,
     lineHeight: 25,

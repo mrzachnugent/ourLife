@@ -13,7 +13,13 @@ import { DashboardNavProps } from "../types/navigationTypes";
 import firebase from "firebase";
 import "firebase/firestore";
 
-import { switchModal, switchToDoModal, updateUser } from "../actions";
+import {
+  switchModal,
+  switchToDoModal,
+  updateGroceryList,
+  updateToDoList,
+  updateUser,
+} from "../actions";
 
 import { globalStyles } from "../styles/globalStyles";
 
@@ -43,9 +49,38 @@ export const Dashboard = ({ navigation }: DashboardNavProps) => {
   //get user data from firestore
   const usersRef = db.collection("users");
 
+  //listen to changes on firebase and update the redux store
+  const updateUserInfo = async () => {
+    if (!userInfo.uid) return null;
+
+    try {
+      usersRef.doc(userInfo.uid).onSnapshot((doc) => {
+        if (
+          !userInfo.otherHalfUid ||
+          !userInfo.relationshipId ||
+          !userInfo.partnerName
+        ) {
+          return null;
+        }
+        dispatch(
+          updateUser({
+            otherHalfUid: doc.data()?.otherHalfUid,
+            relationshipId: doc.data()?.relationshipId,
+            chatRoom: doc.data()?.chatRoom,
+            groceryList: doc.data()?.groceryList,
+            toDoList: doc.data()?.toDoList,
+            halfId: doc.data()?.halfId,
+          })
+        );
+      });
+    } catch (err) {
+      Alert.alert("UH OH", err.message);
+    }
+  };
+
   //update parter in redux store when partner changes their info
   const updatePartnerInfo = async () => {
-    if (!userInfo.otherHalfUid || !isMounted.current) {
+    if (!userInfo.otherHalfUid) {
       return null;
     }
     try {
@@ -69,8 +104,44 @@ export const Dashboard = ({ navigation }: DashboardNavProps) => {
     }
   };
 
+  const getGroceryListFromFirebase = async () => {
+    if (!userInfo.groceryList) {
+      return null;
+    }
+    const groceryListRef = db
+      .collection("groceryLists")
+      .doc(userInfo.groceryList);
+    try {
+      groceryListRef.onSnapshot((doc) => {
+        dispatch(updateGroceryList(doc.data()?.groceryList));
+      });
+    } catch (err) {
+      Alert.alert("UH OH", err.message);
+    }
+  };
+  const getToDoListFromFirebase = async () => {
+    if (!userInfo.toDoList) {
+      return null;
+    }
+    const toDoListRef = db.collection("toDoLists").doc(userInfo.toDoList);
+    try {
+      toDoListRef.onSnapshot((doc) => {
+        dispatch(updateToDoList(doc.data()?.messages));
+      });
+    } catch (err) {
+      Alert.alert("UH OH", err.message);
+    }
+  };
+
+  const updateAsyncInfo = async () => {
+    await updateUserInfo();
+    await updatePartnerInfo();
+    await getGroceryListFromFirebase();
+    getToDoListFromFirebase();
+  };
+
   useEffect(() => {
-    updatePartnerInfo();
+    updateAsyncInfo();
     return () => {
       isMounted.current = false;
     };
@@ -123,15 +194,17 @@ export const Dashboard = ({ navigation }: DashboardNavProps) => {
           colorTwo="#01A355"
           onLongPress={() => dispatch(switchModal())}
         >
-          {userInfo.notifyGroceries && appInfo.groceryArr.length > 0 && (
-            <InfoCircle
-              size={75}
-              numSize={18}
-              textSize={12}
-              array={groArray}
-              isToDo={false}
-            />
-          )}
+          {userInfo.notifyGroceries &&
+            appInfo.groceryArr &&
+            appInfo.groceryArr.length > 0 && (
+              <InfoCircle
+                size={75}
+                numSize={18}
+                textSize={12}
+                array={groArray}
+                isToDo={false}
+              />
+            )}
         </ColorfulButton>
 
         <ColorfulButton
@@ -142,15 +215,17 @@ export const Dashboard = ({ navigation }: DashboardNavProps) => {
           colorTwo="#9C14C4"
           onLongPress={() => dispatch(switchToDoModal())}
         >
-          {userInfo.notifyToDo && appInfo.toDoArr.length > 0 && (
-            <InfoCircle
-              size={75}
-              numSize={18}
-              textSize={0}
-              array={toDoArray}
-              isToDo={true}
-            />
-          )}
+          {userInfo.notifyToDo &&
+            appInfo.toDoArr &&
+            appInfo.toDoArr.length > 0 && (
+              <InfoCircle
+                size={75}
+                numSize={18}
+                textSize={0}
+                array={toDoArray}
+                isToDo={true}
+              />
+            )}
         </ColorfulButton>
       </View>
     </View>

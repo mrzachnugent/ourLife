@@ -23,6 +23,7 @@ import { globalStyles } from "../styles/globalStyles";
 import { LoadingIndicator } from "../Components/LoadingIndicator";
 import { DismissKeyboard } from "../Components/DismissKeyboard";
 import { GenericHeader } from "../Components/GenericHeader";
+import { LogoutButton } from "../Components/LogoutButton";
 
 export const Settings = ({ navigation }: { navigation: any }) => {
   const isMounted = useRef<boolean>(true);
@@ -94,6 +95,7 @@ export const Settings = ({ navigation }: { navigation: any }) => {
             <Text style={styles.text}>Show groceries additional info</Text>
           </View>
         </TouchableOpacity>
+
         <TouchableOpacity onPress={handleSwitchToDo}>
           <View style={styles.onOffNotification}>
             <Image
@@ -106,18 +108,14 @@ export const Settings = ({ navigation }: { navigation: any }) => {
             <Text style={styles.text}>Show todo additional info</Text>
           </View>
         </TouchableOpacity>
+
+        <LogoutButton whereTo={() => navigation.navigate("Login")} />
       </View>
     </DismissKeyboard>
   );
 };
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-  },
-
   onOffNotification: {
     flexDirection: "row",
     alignItems: "center",

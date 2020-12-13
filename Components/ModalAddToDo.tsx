@@ -1,46 +1,54 @@
-import { LinearGradient } from "expo-linear-gradient";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Modal,
   StyleSheet,
   View,
   Text,
   TouchableHighlight,
-  TouchableOpacity,
   Alert,
+  Keyboard,
 } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import { loaded, loading, switchToDoModal } from "../actions";
+
+import { InitialState, ToDoInterface } from "../types/reducerTypes";
+
 import firebase from "firebase";
 import "firebase/firestore";
-import { TextInput } from "react-native-gesture-handler";
-import { useDispatch, useSelector } from "react-redux";
-import { colors, globalStyles } from "../styles/globalStyles";
-import { DismissKeyboard } from "./DismissKeyboard";
-import { loaded, loading, switchToDoModal } from "../actions";
-import { Picker } from "@react-native-community/picker";
+
 import { randomId } from "../utilities";
+
 import { LoadingIndicator } from "./LoadingIndicator";
+import { GenericHeader } from "./GenericHeader";
+import { GenericInput } from "./GenericInput";
+import { QuantityPicker } from "./QuantityPicker";
+import { ThinButton } from "./ThinButton";
+
+import { colors } from "../styles/globalStyles";
 
 export const ModalAddToDo = () => {
-  const appInfo = useSelector((state: any) => state);
-  const userInfo = useSelector((state: any) => state.user);
+  const isMounted = useRef<boolean>(true);
+  const appInfo = useSelector((state: InitialState) => state);
+  const userInfo = useSelector((state: InitialState) => state.user);
   const dispatch = useDispatch();
-  const [isEnabled, setEnabled] = useState(false);
-  const [itemName, setItemName] = useState("");
-  const [assign, setAssign] = useState("no one");
-  const [notes, setNotes] = useState("");
+  const [isEnabled, setEnabled] = useState<boolean>(false);
+  const [itemName, setItemName] = useState<string>("");
+  const [assign, setAssign] = useState<string>("no one");
+  const [notes, setNotes] = useState<string>("");
+
+  if (!userInfo.toDoList) return null;
 
   const db = firebase.firestore();
   const toDoListRef = db.collection("toDoLists").doc(userInfo.toDoList);
 
   useEffect(() => {
-    let isMounted = true;
     if (itemName.length) {
       setEnabled(true);
     } else {
       setEnabled(false);
     }
     return () => {
-      isMounted = true;
+      isMounted.current = false;
     };
   }, [itemName]);
 
@@ -48,7 +56,7 @@ export const ModalAddToDo = () => {
     dispatch(loading());
     try {
       const getDocument = await toDoListRef.get();
-      const getToDoList = await getDocument.data()?.messages;
+      const getToDoList: ToDoInterface[] = await getDocument.data()?.messages;
       const newId = randomId();
       toDoListRef.set({
         messages: [
@@ -62,15 +70,22 @@ export const ModalAddToDo = () => {
           ...getToDoList,
         ],
       });
-      dispatch(switchToDoModal());
       setItemName("");
       setNotes("");
       setAssign("no one");
       dispatch(loaded());
+      dispatch(switchToDoModal());
     } catch (err) {
       Alert.alert("UH OH", err.message);
       dispatch(loaded());
     }
+  };
+
+  const handleGoBack = () => {
+    setItemName("");
+    setNotes("");
+    setAssign("no one");
+    dispatch(switchToDoModal());
   };
 
   return (
@@ -80,138 +95,66 @@ export const ModalAddToDo = () => {
       transparent={true}
       onRequestClose={() => console.log("please close me")}
     >
-      <DismissKeyboard>
-        <TouchableHighlight
-          style={styles.modalBackground}
-          onPress={() => {
-            dispatch(switchToDoModal());
-            setItemName("");
-            setNotes("");
-            setAssign("no one");
-          }}
-        >
-          <TouchableHighlight>
-            <View style={styles.modalContainer}>
-              {appInfo.loadingState && <LoadingIndicator />}
-              <Text style={{ ...styles.mainText, paddingBottom: 40 }}>
-                ADD TO DO
-              </Text>
-              <View>
-                <LinearGradient
-                  start={{ x: 0.0, y: 0.25 }}
-                  end={{ x: 1, y: 1.0 }}
-                  locations={[0, 1]}
-                  colors={["#2C333A", "#2C333A"]}
-                  style={{ ...globalStyles.inputContainer, width: 300 }}
-                >
-                  <TextInput
-                    placeholder="Enter name of item"
-                    placeholderTextColor="#FFFFFF75"
-                    style={globalStyles.input}
-                    onChangeText={(text) => setItemName(text)}
-                  />
-                </LinearGradient>
-                <View style={styles.quantityContainer}>
-                  <Text style={styles.mainText}>Assign</Text>
-                  <LinearGradient
-                    start={{ x: 0.0, y: 0.25 }}
-                    end={{ x: 1, y: 1.0 }}
-                    locations={[0, 1]}
-                    colors={["#2C333A", "#2C333A"]}
-                    style={{ ...globalStyles.inputContainer, width: 180 }}
-                  >
-                    <View>
-                      <Picker
-                        selectedValue={assign}
-                        style={styles.pickerContainer}
-                        mode="dialog"
-                        onValueChange={(itemValue, itemIndex) =>
-                          setAssign(`${itemValue}`)
-                        }
-                      >
-                        <Picker.Item label="no one" value="no one" />
-                        <Picker.Item
-                          label={userInfo.partnerName}
-                          value={
-                            Boolean(userInfo.partnerAvatarSrc)
-                              ? userInfo.partnerAvatarSrc
-                              : userInfo.otherHalfUid
-                          }
-                        />
+      <TouchableHighlight
+        style={styles.modalBackground}
+        onPress={() => {
+          dispatch(switchToDoModal());
+          setItemName("");
+          setNotes("");
+          setAssign("no one");
+        }}
+      >
+        <TouchableHighlight onPress={() => Keyboard.dismiss()}>
+          <View style={styles.modalContainer}>
+            {appInfo.loadingState && <LoadingIndicator />}
+            <GenericHeader
+              goBack={handleGoBack}
+              heading="ADD TASK"
+              iconName="none"
+            />
 
-                        <Picker.Item
-                          label={userInfo.name}
-                          value={userInfo.avatarSrc}
-                        />
-                      </Picker>
-                    </View>
-                  </LinearGradient>
-                </View>
-                <View style={styles.notesContainer}>
-                  <Text style={styles.mainText}>Add Notes</Text>
-                  <LinearGradient
-                    start={{ x: 0.0, y: 0.25 }}
-                    end={{ x: 1, y: 1.0 }}
-                    locations={[0, 1]}
-                    colors={["#2C333A", "#2C333A"]}
-                    style={{ ...globalStyles.inputContainer, width: 300 }}
-                  >
-                    <TextInput
-                      placeholder="Enter notes"
-                      placeholderTextColor="#FFFFFF75"
-                      style={globalStyles.input}
-                      onChangeText={(text) => setNotes(text)}
-                    />
-                  </LinearGradient>
-                </View>
-                <View style={{ alignItems: "center" }}>
-                  <LinearGradient
-                    start={{ x: 0.0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    locations={[0, 0.9]}
-                    colors={["#282C31", "#22262B"]}
-                    style={
-                      isEnabled
-                        ? { ...globalStyles.btnContainer, width: 200 }
-                        : {
-                            ...globalStyles.btnContainer,
-                            width: 200,
-                            opacity: 0.5,
-                          }
-                    }
-                  >
-                    <TouchableOpacity
-                      style={globalStyles.mainBtns}
-                      disabled={!isEnabled}
-                      onPress={handleAddItem}
-                    >
-                      <Text
-                        style={{
-                          ...styles.mainText,
-                          paddingTop: 0,
-                          paddingBottom: 0,
-                        }}
-                      >
-                        ADD TASK
-                      </Text>
-                    </TouchableOpacity>
-                  </LinearGradient>
-                </View>
+            <View style={styles.container}>
+              <GenericInput
+                placeholder="Enter task"
+                onChange={(text) => setItemName(text)}
+              />
+              <QuantityPicker
+                onValueChange={(itemValue, itemIndex) =>
+                  setAssign(`${itemValue}`)
+                }
+                selectedValue={assign}
+                isTodo={true}
+              />
+
+              <View style={styles.notesContainer}>
+                <Text style={styles.mainText}>Add Notes</Text>
+                <GenericInput
+                  placeholder="Enter notes"
+                  onChange={(text) => setNotes(text)}
+                />
               </View>
+              <ThinButton
+                colorOne="#282C31"
+                colorTwo="#22262B"
+                disabled={!isEnabled}
+                onPress={handleAddItem}
+                title="ADD TASK"
+              />
             </View>
-          </TouchableHighlight>
+          </View>
         </TouchableHighlight>
-      </DismissKeyboard>
+      </TouchableHighlight>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
   modalBackground: {
-    backgroundColor: "#00000050",
+    backgroundColor: "#00000090",
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    paddingHorizontal: 25,
   },
   modalContainer: {
     backgroundColor: colors.black,
@@ -232,22 +175,17 @@ const styles = StyleSheet.create({
   mainText: {
     color: colors.white,
     fontFamily: "montserrat-semi-bold",
-    fontSize: 25,
+    fontSize: 18,
     textAlign: "center",
     paddingTop: 25,
     paddingBottom: 15,
   },
-  pickerContainer: {
-    color: colors.white,
-    fontSize: 45,
-  },
-  quantityContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-evenly",
-    paddingTop: 15,
-  },
+
   notesContainer: {
     paddingBottom: 40,
+  },
+  container: {
+    alignItems: "center",
+    paddingTop: 40,
   },
 });

@@ -1,14 +1,15 @@
-import React, { FC, useState, useEffect } from "react";
+import React, { FC, useState, useEffect, useRef } from "react";
 import { Text, View, Image, StyleSheet, Alert, TextInput } from "react-native";
 import {
   TouchableHighlight,
   TouchableOpacity,
 } from "react-native-gesture-handler";
+
 import firebase from "firebase";
-import "firebase/firestore";
+
 import { MaterialIcons } from "@expo/vector-icons";
 import { Entypo } from "@expo/vector-icons";
-import { FontAwesome5 } from "@expo/vector-icons";
+
 import { Feather } from "@expo/vector-icons";
 
 import { colors, globalStyles } from "../styles/globalStyles";
@@ -19,22 +20,23 @@ import { loaded, loading, loggedIn } from "../actions";
 import { LoadingIndicator } from "../Components/LoadingIndicator";
 import apiKeys from "../config/keys";
 import { ValidateEmail } from "../utilities";
+import { LoginNavProps } from "../types/navigationTypes";
+import { InitialState } from "../types/reducerTypes";
+import { GenericInput } from "../Components/GenericInput";
 
 if (!firebase.apps.length) {
   firebase.initializeApp(apiKeys.firebaseConfig);
 }
 
-export const Login = ({ navigation }: { navigation: any }) => {
+export const Login = ({ navigation }: LoginNavProps) => {
+  const isMounted = useRef<boolean>(true);
   const dispatch = useDispatch();
-  const userInfo = useSelector((state: any) => state.user);
-  const appInfo = useSelector((state: any) => state);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [submitEnabled, setSubmitEnabled] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-
-  //access firestore
-  const db = firebase.firestore();
+  const userInfo = useSelector((state: InitialState) => state.user);
+  const appInfo = useSelector((state: InitialState) => state);
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [submitEnabled, setSubmitEnabled] = useState<boolean>(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const onLoginSuccess = () => {
     if (!userInfo.avatarSrc) {
@@ -45,11 +47,9 @@ export const Login = ({ navigation }: { navigation: any }) => {
       navigation.navigate("ShareYourLink");
       return;
     }
-    navigation.navigate("Dashboard");
   };
 
   useEffect(() => {
-    let isMounted = true;
     if (email.length > 4 && password.length) {
       setSubmitEnabled(true);
     } else {
@@ -57,7 +57,7 @@ export const Login = ({ navigation }: { navigation: any }) => {
     }
 
     return () => {
-      isMounted = false;
+      isMounted.current = false;
     };
   }, [email, password]);
 
@@ -102,108 +102,102 @@ export const Login = ({ navigation }: { navigation: any }) => {
         {appInfo.loadingState && <LoadingIndicator />}
         <View style={styles.background}>
           <View>
-            <Text style={styles.smallText}>Welcome to</Text>
             <Text style={styles.heading}>OurLife</Text>
-          </View>
-          <View>
-            <TouchableHighlight
-              disabled={true}
-              style={{ alignItems: "center" }}
-            >
-              <Image
-                source={require("../assets/yoga-sloth.png")}
-                style={{ height: 108, width: 100, marginBottom: 30 }}
-              />
-            </TouchableHighlight>
-            <Text style={styles.smallText}>Log in:</Text>
-          </View>
 
-          <View style={styles.form}>
-            <LinearGradient
-              start={{ x: 0.0, y: 0.25 }}
-              end={{ x: 1, y: 1.0 }}
-              locations={[0, 1]}
-              colors={["#2C333A", "#2C333A"]}
-              style={globalStyles.inputContainer}
-            >
-              <TextInput
-                textContentType="emailAddress"
-                placeholder="Enter your email address"
-                placeholderTextColor="#FFFFFF75"
-                style={globalStyles.input}
-                onChangeText={(text) => setEmail(text)}
+            <Text style={styles.smallText}>Log in:</Text>
+
+            <View style={styles.form}>
+              <GenericInput
+                onChange={(text) => setEmail(text)}
+                placeholder="Enter email address"
               />
-            </LinearGradient>
-            <LinearGradient
-              start={{ x: 0.0, y: 0.25 }}
-              end={{ x: 1, y: 1.0 }}
-              locations={[0, 1]}
-              colors={["#2C333A", "#2C333A"]}
-              style={globalStyles.inputContainer}
-            >
-              <TextInput
-                secureTextEntry={!showPassword}
-                placeholder="Enter your password"
-                placeholderTextColor="#FFFFFF75"
-                style={globalStyles.input}
-                onChangeText={(text) => setPassword(text)}
-              />
-              {!showPassword ? (
-                <MaterialIcons
-                  name="remove-red-eye"
-                  size={20}
-                  color="white"
-                  style={styles.rightIcon}
-                  onPress={() => setShowPassword(!showPassword)}
-                />
-              ) : (
-                <Entypo
-                  name="eye-with-line"
-                  size={20}
-                  color="white"
-                  style={styles.rightIcon}
-                  onPress={() => setShowPassword(!showPassword)}
-                />
-              )}
-            </LinearGradient>
-            <LinearGradient
-              start={{ x: 0.0, y: 0.25 }}
-              end={{ x: 1, y: 1.0 }}
-              locations={[0, 1]}
-              colors={["#2AECFB", "#019EF4"]}
-              style={
-                submitEnabled
-                  ? {
-                      ...globalStyles.btnContainer,
-                      width: 300,
-                      marginTop: 25,
-                    }
-                  : {
-                      ...globalStyles.btnContainer,
-                      width: 300,
-                      marginTop: 25,
-                      opacity: 0.5,
-                    }
-              }
-            >
-              <TouchableOpacity
-                style={{ ...globalStyles.mainBtns, justifyContent: "center" }}
-                disabled={!submitEnabled}
-                onPress={handleLoginSubmit}
+
+              <LinearGradient
+                start={{ x: 0.0, y: 0.25 }}
+                end={{ x: 1, y: 1.0 }}
+                locations={[0, 1]}
+                colors={["#2C333A", "#2C333A"]}
+                style={{ ...globalStyles.inputContainer, marginTop: 20 }}
               >
-                <Text style={globalStyles.titleText}>log in</Text>
-                <Feather
-                  name="log-in"
-                  size={30}
-                  color={colors.white}
-                  style={styles.rightIcon}
+                <TextInput
+                  secureTextEntry={!showPassword}
+                  placeholder="Enter your password"
+                  placeholderTextColor="#FFFFFF75"
+                  style={globalStyles.input}
+                  onChangeText={(text) => setPassword(text)}
                 />
-              </TouchableOpacity>
-            </LinearGradient>
+                {!showPassword ? (
+                  <MaterialIcons
+                    name="remove-red-eye"
+                    size={20}
+                    color="white"
+                    style={styles.rightIcon}
+                    onPress={() => setShowPassword(!showPassword)}
+                  />
+                ) : (
+                  <Entypo
+                    name="eye-with-line"
+                    size={20}
+                    color="white"
+                    style={styles.rightIcon}
+                    onPress={() => setShowPassword(!showPassword)}
+                  />
+                )}
+              </LinearGradient>
+              <LinearGradient
+                start={{ x: 0.0, y: 0.25 }}
+                end={{ x: 1, y: 1.0 }}
+                locations={[0, 1]}
+                colors={["#2AECFB", "#019EF4"]}
+                style={
+                  submitEnabled
+                    ? {
+                        ...globalStyles.btnContainer,
+                        width: 300,
+                        marginTop: 25,
+                      }
+                    : {
+                        ...globalStyles.btnContainer,
+                        width: 300,
+                        marginTop: 25,
+                        opacity: 0.5,
+                      }
+                }
+              >
+                <TouchableOpacity
+                  style={{ ...globalStyles.mainBtns, justifyContent: "center" }}
+                  disabled={!submitEnabled}
+                  onPress={handleLoginSubmit}
+                >
+                  <Text style={globalStyles.titleText}>log in</Text>
+                  <Feather
+                    name="log-in"
+                    size={30}
+                    color={colors.white}
+                    style={styles.rightIcon}
+                  />
+                </TouchableOpacity>
+              </LinearGradient>
+            </View>
+
             <TouchableOpacity
               onPress={handleEmailReset}
               disabled={!ValidateEmail(email)}
             >
+              <TouchableHighlight
+                disabled={true}
+                style={{ alignItems: "center" }}
+              >
+                <Image
+                  source={require("../assets/yoga-sloth.png")}
+                  style={{
+                    height: 108,
+                    width: 100,
+                    marginBottom: 30,
+                    opacity: 0.6,
+                  }}
+                />
+              </TouchableHighlight>
               <Text
                 style={
                   ValidateEmail(email)
@@ -236,9 +230,10 @@ const styles = StyleSheet.create({
   black: {
     flex: 1,
     backgroundColor: "#000",
+    marginTop: -35,
   },
   background: {
-    flex: 0.92,
+    flex: 0.9,
     justifyContent: "space-evenly",
     alignItems: "center",
     backgroundColor: colors.black,
@@ -272,7 +267,7 @@ const styles = StyleSheet.create({
   },
 
   form: {
-    height: 250,
+    paddingVertical: 30,
     justifyContent: "space-between",
   },
 });
