@@ -1,35 +1,19 @@
-import React, { useEffect, useRef } from "react";
-import {
-  View,
-  Text,
-  SafeAreaView,
-  StyleSheet,
-  Image,
-  Alert,
-} from "react-native";
-import { ScrollView, TouchableOpacity } from "react-native-gesture-handler";
+import React, { useEffect, useRef, useState } from "react";
+import { View, Text, StyleSheet, Image, Alert } from "react-native";
+import { ScrollView } from "react-native-gesture-handler";
 import firebase from "firebase";
 import "firebase/firestore";
-import { globalStyles, colors } from "../styles/globalStyles";
-import { MaterialIcons } from "@expo/vector-icons";
-import { Feather } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
-import { ModalAddGroceries } from "../Components/ModalAddGroceries";
+import { colors } from "../styles/globalStyles";
+
 import {
   loaded,
   loading,
-  switchModal,
   switchToDoModal,
+  toggleEditItem,
   updateToDoList,
 } from "../actions";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  getIncompleteItems,
-  getTaskPercentage,
-  moveToTheBack,
-  moveToTheFront,
-  removeSingleItem,
-} from "../utilities";
+import { moveToTheBack, moveToTheFront, removeSingleItem } from "../utilities";
 import { LoadingIndicator } from "../Components/LoadingIndicator";
 import { ModalAddToDo } from "../Components/ModalAddToDo";
 import { DashboardNavProps } from "../types/navigationTypes";
@@ -39,6 +23,7 @@ import { GenericHeader } from "../Components/GenericHeader";
 import { SideButton } from "../Components/SideButton";
 import { InfoCircle } from "../Components/InfoCircle";
 import { ListItem } from "../Components/ListItem";
+import { EditItem } from "../Components/EditItem";
 
 export const ToDo = ({ navigation }: DashboardNavProps) => {
   const isMounted = useRef<boolean>(true);
@@ -51,9 +36,15 @@ export const ToDo = ({ navigation }: DashboardNavProps) => {
 
   const db = firebase.firestore();
   const toDoListDb = db.collection("toDoLists");
-
+  const [chosenItem, setChosenItem] = useState<ToDoInterface>({
+    _id: "dummy",
+    completed: false,
+    name: "dummy",
+    notes: "dummy",
+    assigned: "dummy",
+  });
   const updateReduxToDo = async () => {
-    if (!userInfo.toDoList) return null;
+    if (!userInfo.toDoList) return;
     try {
       const toDoListRef = toDoListDb.doc(userInfo.toDoList);
       toDoListRef.onSnapshot((doc) => {
@@ -64,8 +55,10 @@ export const ToDo = ({ navigation }: DashboardNavProps) => {
     }
   };
 
-  const handleCompleted = async (item: any) => {
-    if (!userInfo.toDoList) return null;
+  //when completed, item goes to the bottom of the list
+  //when unchecked, item goes to the top of the list
+  const handleCompleted = async (item: ToDoInterface) => {
+    if (!userInfo.toDoList) return;
     dispatch(loading());
     try {
       const toDoListRef = toDoListDb.doc(userInfo.toDoList);
@@ -93,7 +86,7 @@ export const ToDo = ({ navigation }: DashboardNavProps) => {
   };
 
   const handleDeleteAll = async () => {
-    if (!userInfo.toDoList) return null;
+    if (!userInfo.toDoList) return;
     dispatch(loading());
     try {
       const toDoListRef = toDoListDb.doc(userInfo.toDoList);
@@ -107,8 +100,8 @@ export const ToDo = ({ navigation }: DashboardNavProps) => {
     }
   };
 
-  const handleDeleteSingleItem = async (item: any) => {
-    if (!userInfo.toDoList) return null;
+  const handleDeleteSingleItem = async (item: ToDoInterface) => {
+    if (!userInfo.toDoList) return;
     dispatch(loading());
     try {
       const toDoListRef = toDoListDb.doc(userInfo.toDoList);
@@ -141,7 +134,7 @@ export const ToDo = ({ navigation }: DashboardNavProps) => {
       ]
     );
   };
-  const handleDeleteSingleItemButton = (item: any) => {
+  const handleDeleteSingleItemButton = (item: ToDoInterface) => {
     Alert.alert("DELETE ITEM?", `Do you want to delete ${item.name}?`, [
       { text: "Cancel", style: "cancel" },
       {
@@ -152,8 +145,9 @@ export const ToDo = ({ navigation }: DashboardNavProps) => {
     ]);
   };
 
-  const handleItemDelails = (item: ToDoInterface) => {
-    console.log(item);
+  const handleSelectItem = (item: ToDoInterface) => {
+    setChosenItem(item);
+    dispatch(toggleEditItem());
   };
 
   useEffect(() => {
@@ -167,6 +161,7 @@ export const ToDo = ({ navigation }: DashboardNavProps) => {
     <DismissKeyboard>
       {appInfo.loadingState && <LoadingIndicator />}
       <ModalAddToDo />
+      <EditItem item={chosenItem} isToDo={true} />
       <GenericHeader
         goBack={() => navigation.navigate("Dashboard")}
         heading="TO DO"
@@ -192,7 +187,12 @@ export const ToDo = ({ navigation }: DashboardNavProps) => {
           isToDo={true}
           isBig={true}
         />
-        <SideButton onPress={handleDeleteButton} iconName="trash" text="ALL" />
+        <SideButton
+          disabled={!appInfo.toDoArr.length}
+          onPress={handleDeleteButton}
+          iconName="trash"
+          text="ALL"
+        />
       </View>
       <View style={styles.body}>
         <Text style={styles.titleText}>TASKS</Text>
@@ -203,7 +203,7 @@ export const ToDo = ({ navigation }: DashboardNavProps) => {
                 <ListItem
                   item={item}
                   onLongPress={handleDeleteSingleItemButton}
-                  onPress={handleItemDelails}
+                  onPress={() => handleSelectItem(item)}
                   onCompleted={handleCompleted}
                   colorOne="#1E89CC"
                   colorTwo="#9C14C4"

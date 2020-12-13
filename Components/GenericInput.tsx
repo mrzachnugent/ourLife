@@ -9,6 +9,7 @@ export const GenericInput: FC<GenericInputProps> = ({
   onChange,
   keyboardType,
   autoCapitalize,
+  autoFocus,
 }: GenericInputProps) => {
   return (
     <LinearGradient
@@ -25,6 +26,7 @@ export const GenericInput: FC<GenericInputProps> = ({
         onChangeText={onChange}
         keyboardType={keyboardType}
         autoCapitalize={autoCapitalize}
+        autoFocus={autoFocus}
       />
     </LinearGradient>
   );

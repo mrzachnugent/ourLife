@@ -6,6 +6,7 @@ const initialState: InitialState = {
   isLoggedIn: false,
   groceryModalVisible: false,
   toDoModalVisible: false,
+  editModalVisible: false,
   groceryArr: [],
   toDoArr: [],
   user: {
@@ -137,6 +138,11 @@ export const userReducer = (state = initialState, action: any) => {
       return {
         ...state,
         groceryModalVisible: !state.groceryModalVisible,
+      };
+    case "TOGGLE_EDIT_ITEM":
+      return {
+        ...state,
+        editModalVisible: !state.editModalVisible,
       };
     case "SWITCH_TODO_MODAL":
       return {

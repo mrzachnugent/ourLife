@@ -31,12 +31,12 @@ export interface User {
   uid: null | string;
   name: null | string;
   phoneNumber: null | string;
-  avatarSrc: null | string;
+  avatarSrc: null | string | undefined;
   halfId: null | string;
   relationshipId: null | string;
   otherHalfUid: null | string;
   partnerName: null | string;
-  partnerAvatarSrc: null | string;
+  partnerAvatarSrc: null | string | undefined;
   partnerPhoneNumber: null | string;
   notfiyMsg: boolean;
   notifyGroceries: boolean;
@@ -52,6 +52,7 @@ export interface InitialState {
   isLoggedIn: boolean;
   groceryModalVisible: boolean;
   toDoModalVisible: boolean;
+  editModalVisible: boolean;
   groceryArr: GroceryInterface[];
   toDoArr: ToDoInterface[];
   user: User;

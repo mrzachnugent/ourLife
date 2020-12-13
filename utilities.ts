@@ -34,7 +34,7 @@ export const randomId = () => {
 
 export const moveToTheBack = async (arr: [], item: any) => {
   if (!Boolean(arr) || !Boolean(item)) {
-    return null;
+    return;
   }
   const completedItem = { ...item, completed: true };
   let filtered: any = [];
@@ -45,7 +45,7 @@ export const moveToTheBack = async (arr: [], item: any) => {
 
 export const moveToTheFront = async (arr: any, item: any) => {
   if (!Boolean(arr) || !Boolean(item)) {
-    return null;
+    return;
   }
   const incompleteItem = { ...item, completed: false };
 
@@ -56,7 +56,7 @@ export const moveToTheFront = async (arr: any, item: any) => {
 
 export const removeSingleItem = async (arr: any, item: any) => {
   if (!Boolean(arr) || !Boolean(item)) {
-    return null;
+    return;
   }
 
   return arr.filter((e: any) => e._id !== item._id);
@@ -64,7 +64,7 @@ export const removeSingleItem = async (arr: any, item: any) => {
 
 export const getIncompleteItems = (arr: any) => {
   if (!Boolean(arr)) {
-    return null;
+    return;
   }
   let newArr = [];
   newArr = arr.filter((e: any) => e.completed === false);
@@ -72,7 +72,7 @@ export const getIncompleteItems = (arr: any) => {
 };
 export const getTaskPercentage = (arr: any) => {
   if (!Boolean(arr)) {
-    return null;
+    return;
   }
   let newArr = [];
   newArr = arr.filter((e: any) => e.completed === true);

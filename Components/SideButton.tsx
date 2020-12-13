@@ -9,7 +9,12 @@ import { Feather } from "@expo/vector-icons";
 import { colors, globalStyles } from "../styles/globalStyles";
 import { color } from "react-native-reanimated";
 
-export const SideButton = ({ onPress, iconName, text }: SideButtonProps) => {
+export const SideButton = ({
+  onPress,
+  iconName,
+  text,
+  disabled,
+}: SideButtonProps) => {
   return (
     <LinearGradient
       start={{ x: 0.0, y: 0 }}
@@ -18,7 +23,11 @@ export const SideButton = ({ onPress, iconName, text }: SideButtonProps) => {
       colors={["#282C31", "#22262B"]}
       style={styles.button}
     >
-      <TouchableOpacity style={globalStyles.mainBtns} onPress={onPress}>
+      <TouchableOpacity
+        style={globalStyles.mainBtns}
+        onPress={onPress}
+        disabled={disabled}
+      >
         <Feather name={iconName} size={35} color="#ffffff50" />
         <Text style={globalStyles.littleText}>{text}</Text>
       </TouchableOpacity>

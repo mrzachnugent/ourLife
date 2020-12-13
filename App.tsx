@@ -18,9 +18,10 @@ if (!firebase.apps.length) {
   firebase.initializeApp(apiKeys.firebaseConfig);
 }
 
-//Removes yellowbox warning for android & potential memory leak
+//Removes yellowbox warnings
 LogBox.ignoreLogs(["Setting a timer for a long period of time"]);
-// LogBox.ignoreLogs(["Can't perform a React state"]);
+//this warning only happens when you go from the login screen to the signup screen.
+LogBox.ignoreLogs(["Can't perform a React state"]);
 
 //configure redux store
 const store = createStore(userReducer);

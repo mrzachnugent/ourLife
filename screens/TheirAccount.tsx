@@ -43,6 +43,7 @@ export const TheirAccount = ({ navigation }: { navigation: any }) => {
     };
   }, []);
 
+  //removes the connection and resets/deletes relationship data
   const handleRemoveConnection = async () => {
     if (
       !isMounted.current ||
@@ -50,9 +51,9 @@ export const TheirAccount = ({ navigation }: { navigation: any }) => {
       !userInfo.relationshipId ||
       !userInfo.uid
     ) {
-      return null;
+      return;
     }
-    const halfId1 = Math.random().toString(36).substring(7);
+    const halfId1 = Math.random().toString(36).substring(6);
     const halfId2 = Math.random().toString(36).substring(7);
     dispatch(loading());
     try {
@@ -65,7 +66,7 @@ export const TheirAccount = ({ navigation }: { navigation: any }) => {
         toDoList: null,
         halfId: halfId1,
       });
-      //create new halfId Document
+      //create partners halfId Document
       await db.collection("halfId").doc(halfId1).set({
         uid: userInfo.otherHalfUid,
         relationshipId: null,
@@ -164,12 +165,6 @@ export const TheirAccount = ({ navigation }: { navigation: any }) => {
 };
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-  },
-
   body: {
     alignItems: "center",
     justifyContent: "space-evenly",

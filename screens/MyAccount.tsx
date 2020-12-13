@@ -49,6 +49,7 @@ export const MyAccount = ({ navigation }: DashboardNavProps) => {
 
   const usersRef = db.collection("users");
 
+  //can only save if name is not 0 charaters
   useEffect(() => {
     if (name.length) {
       setNameEnableSave(true);
@@ -73,7 +74,7 @@ export const MyAccount = ({ navigation }: DashboardNavProps) => {
   }, [phone]);
 
   const handlePress = async () => {
-    if (!userInfo.uid) return null;
+    if (!userInfo.uid) return;
     //request camera roll access
     const { status } = await ImagePicker.requestCameraRollPermissionsAsync();
     if (status !== "granted") {
@@ -111,14 +112,14 @@ export const MyAccount = ({ navigation }: DashboardNavProps) => {
 
   //on name save, it will update firebase and the redux store
   const onNameSave = async () => {
-    if (!userInfo.uid) return null;
+    if (!userInfo.uid) return;
     await usersRef.doc(userInfo.uid).update({ name: name });
     dispatch(userNameUpdate(name));
   };
 
   //on phone number save, it will update firebase and the redux store
   const onPhoneSave = async () => {
-    if (!userInfo.uid) return null;
+    if (!userInfo.uid) return;
     await usersRef.doc(userInfo.uid).update({ phoneNumber: phone });
     dispatch(userPhoneUpdate(phone));
   };

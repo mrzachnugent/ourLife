@@ -35,12 +35,10 @@ export const ModalAddGroceries = () => {
   const [quantityAmount, setQuantityAmount] = useState<string>("1");
   const [notes, setNotes] = useState<string>("");
 
-  if (!userInfo.groceryList) return null;
-
   const db = firebase.firestore();
   const groceryListRef = db
     .collection("groceryLists")
-    .doc(userInfo.groceryList);
+    .doc(userInfo.groceryList ? userInfo.groceryList : "dummy");
 
   useEffect(() => {
     if (itemName.length) {
@@ -97,15 +95,7 @@ export const ModalAddGroceries = () => {
       transparent={true}
       onRequestClose={() => console.log("please close me")}
     >
-      <TouchableHighlight
-        style={styles.modalBackground}
-        onPress={() => {
-          dispatch(switchModal());
-          setItemName("");
-          setNotes("");
-          setQuantityAmount("1");
-        }}
-      >
+      <TouchableHighlight style={styles.modalBackground} onPress={handleGoBack}>
         <TouchableHighlight onPress={() => Keyboard.dismiss()}>
           <View style={styles.modalContainer}>
             {appInfo.loadingState && <LoadingIndicator />}

@@ -88,3 +88,7 @@ export const updateChatArrLenth = (num: any) => ({
 export const resetToInitial = () => ({
   type: "RESET_TO_INITIAL",
 });
+
+export const toggleEditItem = () => ({
+  type: "TOGGLE_EDIT_ITEM",
+});

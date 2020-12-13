@@ -30,6 +30,7 @@ if (!firebase.apps.length) {
 
 export const Login = ({ navigation }: LoginNavProps) => {
   const isMounted = useRef<boolean>(true);
+  const isUnMounting = useRef<boolean>(false);
   const dispatch = useDispatch();
   const userInfo = useSelector((state: InitialState) => state.user);
   const appInfo = useSelector((state: InitialState) => state);
@@ -51,27 +52,36 @@ export const Login = ({ navigation }: LoginNavProps) => {
 
   useEffect(() => {
     if (email.length > 4 && password.length) {
+      if (!isMounted.current) return;
       setSubmitEnabled(true);
     } else {
+      if (!isMounted.current) return;
       setSubmitEnabled(false);
     }
+    return () => {
+      isUnMounting.current = true;
+    };
+  }, [email, password]);
 
+  useEffect(() => {
     return () => {
       isMounted.current = false;
     };
-  }, [email, password]);
+  }, []);
 
   const handleLoginSubmit = async () => {
     dispatch(loading());
     try {
+      if (!isMounted.current) return;
       firebase
         .auth()
         .signInWithEmailAndPassword(email, password)
         .then(() => {
           dispatch(loggedIn());
-          onLoginSuccess();
+
           dispatch(loaded());
         })
+        .then(() => onLoginSuccess())
         .catch((err) => {
           const errorMsg = err.message;
           dispatch(loaded());
@@ -84,16 +94,21 @@ export const Login = ({ navigation }: LoginNavProps) => {
   };
 
   const handleEmailReset = () => {
-    firebase
-      .auth()
-      .sendPasswordResetEmail(email)
-      .then(() =>
-        Alert.alert(
-          "Check your inbox",
-          "You will be recieving a link to reset your password shortly."
+    try {
+      if (!isMounted.current) return;
+      firebase
+        .auth()
+        .sendPasswordResetEmail(email)
+        .then(() =>
+          Alert.alert(
+            "Check your inbox",
+            "You will be recieving a link to reset your password shortly."
+          )
         )
-      )
-      .catch((err) => Alert.alert("OH NO!", err.message));
+        .catch((err) => Alert.alert("OH NO!", err.message));
+    } catch (err) {
+      Alert.alert("OH NO!", err.message);
+    }
   };
 
   return (
@@ -108,7 +123,7 @@ export const Login = ({ navigation }: LoginNavProps) => {
 
             <View style={styles.form}>
               <GenericInput
-                onChange={(text) => setEmail(text)}
+                onChange={(text) => isMounted.current && setEmail(text)}
                 placeholder="Enter email address"
               />
 
@@ -124,7 +139,9 @@ export const Login = ({ navigation }: LoginNavProps) => {
                   placeholder="Enter your password"
                   placeholderTextColor="#FFFFFF75"
                   style={globalStyles.input}
-                  onChangeText={(text) => setPassword(text)}
+                  onChangeText={(text) =>
+                    isMounted.current && setPassword(text)
+                  }
                 />
                 {!showPassword ? (
                   <MaterialIcons
@@ -132,7 +149,9 @@ export const Login = ({ navigation }: LoginNavProps) => {
                     size={20}
                     color="white"
                     style={styles.rightIcon}
-                    onPress={() => setShowPassword(!showPassword)}
+                    onPress={() =>
+                      isMounted.current && setShowPassword(!showPassword)
+                    }
                   />
                 ) : (
                   <Entypo
@@ -140,7 +159,9 @@ export const Login = ({ navigation }: LoginNavProps) => {
                     size={20}
                     color="white"
                     style={styles.rightIcon}
-                    onPress={() => setShowPassword(!showPassword)}
+                    onPress={() =>
+                      isMounted.current && setShowPassword(!showPassword)
+                    }
                   />
                 )}
               </LinearGradient>

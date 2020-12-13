@@ -51,7 +51,7 @@ export const Dashboard = ({ navigation }: DashboardNavProps) => {
 
   //listen to changes on firebase and update the redux store
   const updateUserInfo = async () => {
-    if (!userInfo.uid) return null;
+    if (!userInfo.uid) return;
 
     try {
       usersRef.doc(userInfo.uid).onSnapshot((doc) => {
@@ -60,7 +60,7 @@ export const Dashboard = ({ navigation }: DashboardNavProps) => {
           !userInfo.relationshipId ||
           !userInfo.partnerName
         ) {
-          return null;
+          return;
         }
         dispatch(
           updateUser({
@@ -81,7 +81,7 @@ export const Dashboard = ({ navigation }: DashboardNavProps) => {
   //update parter in redux store when partner changes their info
   const updatePartnerInfo = async () => {
     if (!userInfo.otherHalfUid) {
-      return null;
+      return;
     }
     try {
       usersRef.doc(userInfo.otherHalfUid).onSnapshot((doc) => {
@@ -95,7 +95,6 @@ export const Dashboard = ({ navigation }: DashboardNavProps) => {
             chatRoom: doc.data()?.chatRoom,
             groceryList: doc.data()?.groceryList,
             toDoList: doc.data()?.toDoList,
-            halfId: doc.data()?.halfId,
           })
         );
       });
@@ -106,7 +105,7 @@ export const Dashboard = ({ navigation }: DashboardNavProps) => {
 
   const getGroceryListFromFirebase = async () => {
     if (!userInfo.groceryList) {
-      return null;
+      return;
     }
     const groceryListRef = db
       .collection("groceryLists")
@@ -121,7 +120,7 @@ export const Dashboard = ({ navigation }: DashboardNavProps) => {
   };
   const getToDoListFromFirebase = async () => {
     if (!userInfo.toDoList) {
-      return null;
+      return;
     }
     const toDoListRef = db.collection("toDoLists").doc(userInfo.toDoList);
     try {
@@ -133,6 +132,7 @@ export const Dashboard = ({ navigation }: DashboardNavProps) => {
     }
   };
 
+  //its important that the user info is updates before the rest
   const updateAsyncInfo = async () => {
     await updateUserInfo();
     await updatePartnerInfo();

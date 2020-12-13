@@ -37,8 +37,11 @@ export const UploadAvatar = ({ navigation }: UploadAvatarNavProps) => {
     navigation.navigate("Dashboard");
   };
 
+  //request permission for camera roll
+  //allows user to chose a picture
+  //allows user to crop picture to a ratio of 4:4
   const handlePress = async () => {
-    if (!userInfo.uid) return null;
+    if (!userInfo.uid) return;
 
     const { status } = await ImagePicker.requestCameraRollPermissionsAsync();
     if (status !== "granted") {
@@ -130,12 +133,7 @@ const styles = StyleSheet.create({
     paddingTop: 50,
     minHeight: 300,
   },
-  smallText: {
-    color: colors.white,
-    fontFamily: "montserrat-bold",
-    textAlign: "center",
-    fontSize: 18,
-  },
+
   heading: {
     color: colors.white,
     fontFamily: "montserrat-alternates",
@@ -158,15 +156,5 @@ const styles = StyleSheet.create({
     justifyContent: "flex-end",
     paddingHorizontal: 12,
     alignItems: "center",
-  },
-  littleButton: {
-    color: colors.white,
-    fontFamily: "montserrat-regular",
-    opacity: 0.8,
-  },
-  avatar: {
-    width: 200,
-    height: 200,
-    borderRadius: 5000,
   },
 });

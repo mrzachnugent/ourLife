@@ -79,6 +79,7 @@ export interface GenericInputProps {
   placeholder: string;
   keyboardType?: KeyboardTypes;
   autoCapitalize?: "none" | "sentences" | "words" | "characters" | undefined;
+  autoFocus?: boolean;
 }
 
 export interface LogoutButtonProps {
@@ -89,6 +90,7 @@ export interface SideButtonProps {
   onPress(): void;
   iconName: string;
   text: string;
+  disabled?: boolean;
 }
 
 export interface ListItemProps {
@@ -104,4 +106,9 @@ export interface QuantityPickerProps {
   selectedValue: string;
   onValueChange(itemValue: string | number, itemIndex: number): void;
   isTodo: boolean;
+}
+
+export interface EditItemProps {
+  item: any;
+  isToDo: boolean;
 }

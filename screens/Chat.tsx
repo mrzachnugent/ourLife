@@ -10,7 +10,6 @@ import "firebase/firestore";
 
 import { GiftedChat, IMessage, User } from "react-native-gifted-chat";
 
-import { randomId } from "../utilities";
 import { DismissKeyboard } from "../Components/DismissKeyboard";
 import { GenericHeader } from "../Components/GenericHeader";
 import { RenderBubble } from "../Components/ReanderBubble";
@@ -22,20 +21,22 @@ export const Chat = ({ navigation }: DashboardNavProps) => {
   const [messages, setMessages] = useState<IMessage[]>([]);
   const db = firebase.firestore();
 
+  //the collection messages is a subcollection of chatRoom, each message is a document.
   const messagesRef = db
     .collection("chatRooms")
     .doc(`room_${userInfo.relationshipId}`)
     .collection("messages");
 
-  const user: User = {
-    _id: userInfo.uid ? userInfo.uid : randomId(),
-    name: userInfo.name ? userInfo.name : undefined,
-    avatar: userInfo.avatarSrc ? userInfo.avatarSrc : undefined,
+  const user: any = {
+    _id: userInfo.uid,
+    name: userInfo.name,
+    avatar: userInfo.avatarSrc,
   };
 
+  //Callback is used to append the messages from firebase to giftedchat.
   const appendMessages = useCallback(
-    (messages: IMessage[]) => {
-      if (!mountedRef.current) return null;
+    (messages: any) => {
+      if (!mountedRef.current) return;
       setMessages((previousMessage) =>
         GiftedChat.append(previousMessage, messages)
       );
@@ -43,14 +44,15 @@ export const Chat = ({ navigation }: DashboardNavProps) => {
     [messages]
   );
 
-  const handleSend = async (messages: IMessage[]) => {
+  //Sends message to firebase
+  const handleSend = async (messages: []) => {
     const write = messages.map((m) => messagesRef.add(m));
     await Promise.all(write);
   };
 
+  //listens to changes on firebase, so the messages are sent in real-time,
   useEffect(() => {
     const unsubscribe = messagesRef.onSnapshot((querySnashot) => {
-      if (!mountedRef.current) return null;
       const messagesFirestore = querySnashot
         .docChanges()
         .filter(({ type }) => type === "added")
@@ -64,7 +66,7 @@ export const Chat = ({ navigation }: DashboardNavProps) => {
           };
         })
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
-      if (!mountedRef.current) return null;
+
       appendMessages(messagesFirestore);
     });
 

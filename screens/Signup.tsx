@@ -37,6 +37,9 @@ export const Signup = ({ navigation }: SignupNavProps) => {
   //access firestore
   const db = firebase.firestore();
 
+  //once signed up
+  //if they have an avatar, they go straight to Share your link screen
+  //else they go to Upload Avatar
   const onLoginSuccess = () => {
     if (!userInfo.avatarSrc) {
       navigation.navigate("UploadAvatar");
@@ -47,6 +50,7 @@ export const Signup = ({ navigation }: SignupNavProps) => {
     }
   };
 
+  //enables signup button under these conditions:
   useEffect(() => {
     if (name.length > 1 && email.length > 8 && password.length) {
       setSubmitEnabled(true);
@@ -59,6 +63,7 @@ export const Signup = ({ navigation }: SignupNavProps) => {
     };
   }, [email, password, name]);
 
+  //creates user auth account and updates the user collection in firebase
   const handleSignupSubmit = async () => {
     if (!ValidateEmail(email)) {
       Alert.alert("Please try again", "You entered an invalid email address.");
@@ -205,7 +210,12 @@ export const Signup = ({ navigation }: SignupNavProps) => {
           <View style={{ alignItems: "center" }}>
             <Image
               source={require("../assets/donut-sloth.png")}
-              style={{ height: 108, width: 108, marginBottom: 30 }}
+              style={{
+                height: 108,
+                width: 108,
+                marginBottom: 30,
+                opacity: 0.6,
+              }}
             />
           </View>
         </View>

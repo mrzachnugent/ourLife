@@ -1,9 +1,15 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { View, Text, StyleSheet, Image, Alert } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 
 import { useDispatch, useSelector } from "react-redux";
-import { loaded, loading, switchModal, updateGroceryList } from "../actions";
+import {
+  loaded,
+  loading,
+  switchModal,
+  toggleEditItem,
+  updateGroceryList,
+} from "../actions";
 
 import { GroceryInterface, InitialState } from "../types/reducerTypes";
 import { DashboardNavProps } from "../types/navigationTypes";
@@ -22,6 +28,7 @@ import { InfoCircle } from "../Components/InfoCircle";
 import { ListItem } from "../Components/ListItem";
 
 import { colors } from "../styles/globalStyles";
+import { EditItem } from "../Components/EditItem";
 
 export const Groceries = ({ navigation }: DashboardNavProps) => {
   const isMounted = useRef<boolean>(true);
@@ -33,13 +40,21 @@ export const Groceries = ({ navigation }: DashboardNavProps) => {
   );
   const db = firebase.firestore();
   const groceryListDb = db.collection("groceryLists");
+  const [chosenItem, setChosenItem] = useState<GroceryInterface>({
+    _id: "dummy",
+    completed: false,
+    name: "dummy",
+    notes: "dummy",
+    quantity: "dummy",
+  });
 
+  //listens to changes made by connection and updates in real-time
   const updateReduxGroceries = async () => {
-    if (!userInfo.groceryList) return null;
+    if (!userInfo.groceryList) return;
     try {
       const groceryListRef = groceryListDb.doc(userInfo.groceryList);
       groceryListRef.onSnapshot((doc) => {
-        if (!isMounted.current) return null;
+        if (!isMounted.current) return;
         dispatch(updateGroceryList(doc.data()?.groceryList));
       });
     } catch (err) {
@@ -47,8 +62,10 @@ export const Groceries = ({ navigation }: DashboardNavProps) => {
     }
   };
 
+  //if item is completed, it goes to the bottom of the list
+  //if the item is unchecked, it goes to the top of the list
   const handleCompleted = async (item: GroceryInterface) => {
-    if (!userInfo.groceryList) return null;
+    if (!userInfo.groceryList) return;
     dispatch(loading());
     try {
       const groceryListRef = groceryListDb.doc(userInfo.groceryList);
@@ -76,7 +93,7 @@ export const Groceries = ({ navigation }: DashboardNavProps) => {
   };
 
   const handleDeleteAll = async () => {
-    if (!userInfo.groceryList) return null;
+    if (!userInfo.groceryList) return;
     dispatch(loading());
     try {
       const groceryListRef = groceryListDb.doc(userInfo.groceryList);
@@ -91,7 +108,7 @@ export const Groceries = ({ navigation }: DashboardNavProps) => {
   };
 
   const handleDeleteSingleItem = async (item: GroceryInterface) => {
-    if (!userInfo.groceryList) return null;
+    if (!userInfo.groceryList) return;
     dispatch(loading());
     try {
       const groceryListRef = groceryListDb.doc(userInfo.groceryList);
@@ -139,8 +156,10 @@ export const Groceries = ({ navigation }: DashboardNavProps) => {
     ]);
   };
 
-  const handleItemDelails = (item: GroceryInterface) => {
-    console.log(item);
+  //TODO
+  const handleSelectItem = (item: GroceryInterface) => {
+    setChosenItem(item);
+    dispatch(toggleEditItem());
   };
 
   useEffect(() => {
@@ -154,6 +173,7 @@ export const Groceries = ({ navigation }: DashboardNavProps) => {
     <DismissKeyboard>
       {appInfo.loadingState && <LoadingIndicator />}
       <ModalAddGroceries />
+      <EditItem item={chosenItem} isToDo={false} />
       <GenericHeader
         goBack={() => navigation.navigate("Dashboard")}
         heading="GROCERIES"
@@ -178,7 +198,12 @@ export const Groceries = ({ navigation }: DashboardNavProps) => {
           isToDo={false}
           isBig={true}
         />
-        <SideButton onPress={handleDeleteButton} iconName="trash" text="ALL" />
+        <SideButton
+          disabled={!appInfo.groceryArr.length}
+          onPress={handleDeleteButton}
+          iconName="trash"
+          text="ALL"
+        />
       </View>
       <View style={styles.body}>
         <Text style={styles.titleText}>PICK UP</Text>
@@ -189,7 +214,7 @@ export const Groceries = ({ navigation }: DashboardNavProps) => {
                 <ListItem
                   item={item}
                   onLongPress={handleDeleteSingleItemButton}
-                  onPress={handleItemDelails}
+                  onPress={() => handleSelectItem(item)}
                   onCompleted={handleCompleted}
                   colorOne="#01A355"
                   colorTwo="#14D1D1"

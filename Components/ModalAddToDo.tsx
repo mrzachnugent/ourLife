@@ -36,10 +36,10 @@ export const ModalAddToDo = () => {
   const [assign, setAssign] = useState<string>("no one");
   const [notes, setNotes] = useState<string>("");
 
-  if (!userInfo.toDoList) return null;
-
   const db = firebase.firestore();
-  const toDoListRef = db.collection("toDoLists").doc(userInfo.toDoList);
+  const toDoListRef = db
+    .collection("toDoLists")
+    .doc(userInfo.toDoList ? userInfo.toDoList : "dummy");
 
   useEffect(() => {
     if (itemName.length) {

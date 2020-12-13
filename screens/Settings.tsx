@@ -34,7 +34,7 @@ export const Settings = ({ navigation }: { navigation: any }) => {
   const usersRef = db.collection("users");
 
   const handleSwitchGroceries = async () => {
-    if (!isMounted.current || !userInfo.uid) return null;
+    if (!isMounted.current || !userInfo.uid) return;
     dispatch(loading());
     try {
       await usersRef
@@ -47,7 +47,7 @@ export const Settings = ({ navigation }: { navigation: any }) => {
     }
   };
   const handleSwitchToDo = async () => {
-    if (!isMounted.current || !userInfo.uid) return null;
+    if (!isMounted.current || !userInfo.uid) return;
     dispatch(loading());
     try {
       await usersRef

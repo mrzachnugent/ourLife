@@ -15,7 +15,9 @@ export const ListItem = ({
   colorOne,
   colorTwo,
 }: ListItemProps) => {
-  if (!item) return null;
+  if (!item) {
+    return <Text>OUPSIE!</Text>;
+  }
   return (
     <View style={styles.itemContainer}>
       <LinearGradient

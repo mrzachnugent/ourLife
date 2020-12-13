@@ -2,13 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Text, View, Share, StyleSheet, Alert } from "react-native";
 import { TouchableOpacity } from "react-native-gesture-handler";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  loaded,
-  loading,
-  loggedOut,
-  madeConnection,
-  resetToInitial,
-} from "../actions";
+import { loaded, loading, madeConnection, resetToInitial } from "../actions";
 
 import { ShareYourLinkNavProps } from "../types/navigationTypes";
 import { InitialState } from "../types/reducerTypes";
@@ -41,18 +35,24 @@ export const ShareYourLink = ({ navigation }: ShareYourLinkNavProps) => {
   const groceryListsRef = db.collection("groceryLists");
   const toDoListsRef = db.collection("toDoLists");
 
+  //enables connect button:
   useEffect(() => {
-    if (connectorsCode.length <= 4) {
+    if (connectorsCode === (userInfo.halfId && userInfo.halfId)) {
       setEnableSubmit(true);
+    } else if (connectorsCode.length <= 4) {
+      setEnableSubmit(false);
     } else {
       setEnableSubmit(false);
     }
+  }, [connectorsCode]);
 
+  useEffect(() => {
     return () => {
       isMounted.current = false;
     };
-  }, [connectorsCode]);
+  }, []);
 
+  //opens native sharing options for the connect code
   const handleOnShare = async () => {
     try {
       await Share.share({
@@ -63,8 +63,9 @@ export const ShareYourLink = ({ navigation }: ShareYourLinkNavProps) => {
     }
   };
 
+  //checks if connection is possible
   const handleOnConnect = async () => {
-    if (!userInfo.halfId || !userInfo.uid) return null;
+    if (!userInfo.halfId || !userInfo.uid) return;
 
     dispatch(loading());
     try {
@@ -153,10 +154,11 @@ export const ShareYourLink = ({ navigation }: ShareYourLinkNavProps) => {
     }
   };
 
+  //Cannot connect to more than one person
   const handleAlreadyConnected = async () => {
     dispatch(loading());
     try {
-      if (!userInfo.uid) return null;
+      if (!userInfo.uid) return;
       const firestoreUser = await usersRef.doc(userInfo.uid).get();
       const relationshipId = firestoreUser.data()?.relationshipId;
       if (!relationshipId) {
@@ -242,7 +244,8 @@ export const ShareYourLink = ({ navigation }: ShareYourLinkNavProps) => {
                 marginTop: 25,
               }}
             >
-              You can connect together once someone has entered a connect code.
+              You can connect together once someone has submitted a connect
+              code.
             </Text>
           </View>
 
