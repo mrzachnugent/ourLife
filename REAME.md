@@ -2,6 +2,8 @@
 
 A mobile application created with React Native.
 
+<img src="./assets/screenshots/dashboard.png" style="width: 200px"/>
+
 ## Description
 
 > Our Life allows users to connect with a single other user. It was built as a final project for a Full-Stack Web Development Bootcamp. The purpose of the app is to help people organize their lives. More specifically, to help communicate what needs to get done.
@@ -13,6 +15,10 @@ A mobile application created with React Native.
 - Shared grocery list
 - Shared to do list
 - Real-time changes
+
+<div style="text-align: center">
+<img src="./assets/screenshots/ourLifeGif.gif"/>
+</div>
 
 ## Technologies
 
@@ -31,14 +37,23 @@ A mobile application created with React Native.
 - For iOS, download the [Expo Client](https://apps.apple.com/ca/app/expo-client/id982107779) app.
 - Use the app ( android ) or camera ( iOS ) to scan the QR code below:
 
-- Create an account
-- Upload an Avatar
-- Connect with one other person. One of the two users needs to enter it on the screen that requests the Connect Code.
-- Admire the other person's avatar at the center of your Dashboard.
-- Start chatting on the Chat screen
-- You can add, edit, and delete grocery items on the Groceries screen.
+- Create an account<br>
+  <img src="./assets/screenshots/signup.png" style="width: 200px"/>
+- Upload an Avatar <br>
+  <img src="./assets/screenshots/upload.png" style="width: 200px"/>
+- Connect with one other person. One of the two users needs to enter it on the screen that requests the Connect Code. <br>
+  <img src="./assets/screenshots/connect.png" style="width: 200px"/>
+- Admire the other person's avatar at the center of your Dashboard. <br>
+  <img src="./assets/screenshots/dashboard.png" style="width: 200px"/>
+- Start chatting on the Chat screen <br>
+  <img src="./assets/screenshots/chat.png" style="width: 200px"/>
+- You can add, edit, and delete grocery items on the Groceries screen. <br>
+  <img src="./assets/screenshots/groceries.png" style="width: 200px"/>
 - You can add, assign, edit, and delete tasks on the Todo screen.
+  <img src="./assets/screenshots/todo.png" style="width: 200px"/>
 - Once a grocey or task is marked as completed, it will go to the bottom of the list.
 - Once a completed task or grocery item is marked as uncompleted, it will go to the top of the list.
-- You can modify your name, avatar, and phone number.
+- You can modify your name, avatar, and phone number. <br>
+  <img src="./assets/screenshots/myaccount.png" style="width: 200px"/>
 - If the other person annoys you too much, you can always remove the connection and find someone else to connect with. 🤭 <br>
+  <img src="./assets/screenshots/theiraccount.png" style="width: 200px"/>
