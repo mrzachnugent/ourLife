@@ -4,6 +4,7 @@ import { ScrollView } from "react-native-gesture-handler";
 
 import { useDispatch, useSelector } from "react-redux";
 import {
+  closeEditItem,
   loaded,
   loading,
   switchModal,
@@ -162,6 +163,8 @@ export const Groceries = ({ navigation }: DashboardNavProps) => {
   };
 
   useEffect(() => {
+    //To prevent EditItem to open on render
+    dispatch(closeEditItem());
     updateReduxGroceries();
     return () => {
       isMounted.current = false;

@@ -92,3 +92,6 @@ export const resetToInitial = () => ({
 export const toggleEditItem = () => ({
   type: "TOGGLE_EDIT_ITEM",
 });
+export const closeEditItem = () => ({
+  type: "CLOSE_EDIT_ITEM",
+});

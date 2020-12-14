@@ -144,6 +144,11 @@ export const userReducer = (state = initialState, action: any) => {
         ...state,
         editModalVisible: !state.editModalVisible,
       };
+    case "CLOSE_EDIT_ITEM":
+      return {
+        ...state,
+        editModalVisible: false,
+      };
     case "SWITCH_TODO_MODAL":
       return {
         ...state,

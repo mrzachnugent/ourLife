@@ -6,6 +6,7 @@ import "firebase/firestore";
 import { colors } from "../styles/globalStyles";
 
 import {
+  closeEditItem,
   loaded,
   loading,
   switchToDoModal,
@@ -151,6 +152,7 @@ export const ToDo = ({ navigation }: DashboardNavProps) => {
   };
 
   useEffect(() => {
+    dispatch(closeEditItem());
     updateReduxToDo();
     return () => {
       isMounted.current = false;

@@ -200,25 +200,24 @@ export const Login = ({ navigation }: LoginNavProps) => {
                 </TouchableOpacity>
               </LinearGradient>
             </View>
-
+            <TouchableHighlight
+              disabled={true}
+              style={{ alignItems: "center" }}
+            >
+              <Image
+                source={require("../assets/yoga-sloth.png")}
+                style={{
+                  height: 108,
+                  width: 100,
+                  marginBottom: 30,
+                  opacity: 0.6,
+                }}
+              />
+            </TouchableHighlight>
             <TouchableOpacity
               onPress={handleEmailReset}
               disabled={!ValidateEmail(email)}
             >
-              <TouchableHighlight
-                disabled={true}
-                style={{ alignItems: "center" }}
-              >
-                <Image
-                  source={require("../assets/yoga-sloth.png")}
-                  style={{
-                    height: 108,
-                    width: 100,
-                    marginBottom: 30,
-                    opacity: 0.6,
-                  }}
-                />
-              </TouchableHighlight>
               <Text
                 style={
                   ValidateEmail(email)
