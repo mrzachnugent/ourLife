@@ -40,7 +40,7 @@ A mobile application created with React Native. <br>
   <img src="./assets/screenshots/signup.png" style="width: 200px"/>
 - Upload an Avatar <br>
   <img src="./assets/screenshots/upload.png" style="width: 200px"/>
-- Connect with one other person. One of the two users needs to enter it on the screen that requests the Connect Code. <br>
+- Connect with one other person.<br>
   <img src="./assets/screenshots/connect.png" style="width: 200px"/>
 - Admire the other person's avatar at the center of your Dashboard. <br>
   <img src="./assets/screenshots/dashboard.png" style="width: 200px"/>
@@ -51,7 +51,7 @@ A mobile application created with React Native. <br>
 - You can add, assign, edit, and delete tasks.<br>
   <img src="./assets/screenshots/todo.png" style="width: 200px"/>
 - Once a grocey or task is marked as completed, it will go to the bottom of the list.
-- Once a completed task or grocery item is marked as uncompleted, it will go to the top of the list.
+- Once a completed task or grocery item is marked as incomplete, it will go to the top of the list.
 - You can modify your name, avatar, and phone number. <br>
   <img src="./assets/screenshots/myaccount.png" style="width: 200px"/>
 - If the other person annoys you too much, you can always remove the connection and find someone else to connect with. 🤭 <br>
