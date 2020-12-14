@@ -134,6 +134,7 @@ export const EditItem = ({ item, isToDo }: EditItemProps) => {
       animationType="fade"
       visible={appInfo.editModalVisible}
       transparent={true}
+      onRequestClose={() => console.log("please close me")}
     >
       <TouchableHighlight style={styles.modalBackground} onPress={handleGoBack}>
         <TouchableHighlight onPress={() => Keyboard.dismiss()}>

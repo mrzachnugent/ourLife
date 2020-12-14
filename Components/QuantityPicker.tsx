@@ -1,5 +1,5 @@
 import React from "react";
-import { View, StyleSheet, Text } from "react-native";
+import { View, StyleSheet, Text, Platform } from "react-native";
 import { useSelector } from "react-redux";
 
 import { InitialState } from "../types/reducerTypes";
@@ -31,7 +31,7 @@ export const QuantityPicker = ({
             <Picker
               selectedValue={selectedValue}
               style={styles.pickerContainer}
-              mode="dropdown"
+              mode={Platform.OS === "android" ? "dropdown" : "dialog"}
               onValueChange={onValueChange}
             >
               <Picker.Item label="1" value="1" />
@@ -78,6 +78,9 @@ export const QuantityPicker = ({
           )}
         </View>
       </LinearGradient>
+      {Platform.OS === "ios" && (
+        <Text style={styles.mainText}>scroll to choose</Text>
+      )}
     </View>
   );
 };

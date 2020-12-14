@@ -79,7 +79,7 @@ export const ShareYourLink = ({ navigation }: ShareYourLinkNavProps) => {
         return;
       }
       const inRelationship = doesExist.data();
-      console.log(inRelationship?.relationshipId);
+
       if (inRelationship?.relationshipId) {
         dispatch(loaded());
         Alert.alert(
@@ -345,7 +345,7 @@ const styles = StyleSheet.create({
   },
   background: {
     height: "85%",
-    minHeight: 550,
+    minHeight: 500,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: colors.black,
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
   },
 
   bottom: {
-    flex: 0.1,
+    flex: 0.4,
     flexDirection: "row",
     justifyContent: "space-between",
     paddingHorizontal: 12,

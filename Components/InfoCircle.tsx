@@ -1,5 +1,5 @@
 import React from "react";
-import { Text, View, StyleSheet } from "react-native";
+import { Text, View, StyleSheet, Platform } from "react-native";
 
 import { InfoCircleProps } from "../types/screenTypes";
 
@@ -19,10 +19,12 @@ export const InfoCircle = ({
     <View
       style={{
         ...styles.infoCircle,
-        height: size,
+        height: Platform.OS === "ios" && !isBig ? size - 30 : size,
         width: size,
         borderColor: !isToDo ? "#01A355" : "#9C14C4",
         position: !isBig ? "absolute" : "relative",
+        borderRadius: Platform.OS === "ios" && !isBig ? 0 : 5000,
+        top: Platform.OS === "ios" && !isBig ? 2 : -10,
       }}
     >
       <Text style={{ ...styles.infoNumber, fontSize: numSize }}>
@@ -47,10 +49,7 @@ export const InfoCircle = ({
 const styles = StyleSheet.create({
   infoCircle: {
     backgroundColor: "#0c0c0c",
-
     left: 0,
-    top: -10,
-    borderRadius: 5000,
     color: colors.white,
     justifyContent: "center",
     alignItems: "center",

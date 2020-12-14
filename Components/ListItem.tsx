@@ -88,7 +88,7 @@ export const ListItem = ({
         >
           <Text
             style={
-              item.name.length < 24
+              item.name.length < 16
                 ? styles.itemText
                 : { ...styles.itemText, fontSize: 17 }
             }
@@ -148,7 +148,9 @@ const styles = StyleSheet.create({
     height: 60,
   },
   itemTouchable: {
-    padding: 11,
+    justifyContent: "center",
+    height: "100%",
+    paddingHorizontal: 11,
   },
   itemText: {
     color: colors.white,

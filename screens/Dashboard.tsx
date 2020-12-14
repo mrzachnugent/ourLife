@@ -239,7 +239,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-around",
     paddingTop: 25,
     backgroundColor: "#00d9ff",
-    borderBottomRightRadius: 5000,
+    borderBottomRightRadius: 500,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,

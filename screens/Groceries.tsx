@@ -41,11 +41,11 @@ export const Groceries = ({ navigation }: DashboardNavProps) => {
   const db = firebase.firestore();
   const groceryListDb = db.collection("groceryLists");
   const [chosenItem, setChosenItem] = useState<GroceryInterface>({
-    _id: "dummy",
+    _id: "1",
     completed: false,
-    name: "dummy",
-    notes: "dummy",
-    quantity: "dummy",
+    name: "Sorry",
+    notes: "Please close",
+    quantity: "1",
   });
 
   //listens to changes made by connection and updates in real-time
@@ -156,7 +156,6 @@ export const Groceries = ({ navigation }: DashboardNavProps) => {
     ]);
   };
 
-  //TODO
   const handleSelectItem = (item: GroceryInterface) => {
     setChosenItem(item);
     dispatch(toggleEditItem());

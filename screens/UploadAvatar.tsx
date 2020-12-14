@@ -151,7 +151,7 @@ const styles = StyleSheet.create({
     borderStyle: "dashed",
   },
   bottom: {
-    flex: 0.1,
+    flex: 0.2,
     flexDirection: "row",
     justifyContent: "flex-end",
     paddingHorizontal: 12,
