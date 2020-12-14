@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "ourLife",
-    "slug": "ourLife",
+    "name": "Our Life",
+    "slug": "our-life",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -13,7 +13,9 @@
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "facebookScheme": "fb712802192682691",
     "facebookAppId": "712802192682691",
     "facebookDisplayName": "OurLife",
@@ -37,11 +39,11 @@
     },
     "androidNavigationBar": {
       "barStyle": "light-content",
-
       "backgroundColor": "#000000"
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "description": "Our Life allows users to connect with a single other user. It was built as a final project for a Full-Stack Web Development Bootcamp. The purpose of the app is to help people organize their lives. More specifically, to help communicate what needs to get done"
   }
 }
