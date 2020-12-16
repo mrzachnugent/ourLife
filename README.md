@@ -33,7 +33,7 @@ A mobile application created with React Native. <br>
 ## How can I use it?
 
 - For android, download the [Expo](https://play.google.com/store/apps/details?id=host.exp.exponent&hl=en_CA&gl=US) app.
-- *Unfortunately the Expo Client application does not work for published apps on iOS at the moment* 
+- *Unfortunately, the Expo Client application does not work for published apps on iOS.* 
 - Use the Expo app to scan the QR code below: <br>
   <img src="./assets/screenshots/qr-code.png" style="width: 200px"/>
 - Create an account<br>
